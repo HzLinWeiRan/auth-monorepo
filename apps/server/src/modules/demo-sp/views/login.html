@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{PAGE_TITLE}}</title>
+  <style>
+    /* Tailwind CSS CDN */
+    @import url('https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
+
+    :root {
+      --primary: {{PRIMARY_COLOR}};
+      --primary-dark: {{PRIMARY_COLOR_DARK}};
+      --text: #0F172A;
+      --text-muted: #64748B;
+    }
+
+    * { font-family: "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #F1F5F9 0%, #DBEAFE 50%, #EFF6FF 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 20px 50px -12px rgba(37, 99, 235, 0.25);
+      border-radius: 24px;
+    }
+
+    .field {
+      transition: all 0.25s ease;
+      border: 1.5px solid #E2E8F0;
+    }
+    .field:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+      box-shadow: 0 10px 22px -8px rgba(37, 99, 235, 0.55);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 28px -10px rgba(37, 99, 235, 0.65);
+      filter: brightness(1.04);
+    }
+    .btn-primary:active { transform: translateY(0); }
+
+    .brand-logo {
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      box-shadow: 0 10px 22px -8px rgba(37, 99, 235, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .brand-logo img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body>
+  <main class="glass-card w-[380px] px-9 py-10">
+    <div class="flex flex-col items-center mb-7">
+      <div class="brand-logo">
+        {{LOGO_CONTENT}}
+      </div>
+      <h1 class="mt-4 text-[22px] font-semibold tracking-wide">{{APP_NAME}}</h1>
+      <p class="mt-1 text-[13px] text-[#64748B]">一次登录，畅享所有业务系统</p>
+    </div>
+
+    <form method="post" action="/oauth/login" class="flex flex-col gap-4" novalidate>
+      <div>
+        <label class="block text-[13px] font-medium text-[#475569] mb-1.5">用户名</label>
+        <input name="username" type="text" autocomplete="username" required
+          class="field w-full rounded-xl px-4 py-3 text-[14px] bg-white/70"
+          placeholder="请输入用户名" />
+      </div>
+
+      <div>
+        <label class="block text-[13px] font-medium text-[#475569] mb-1.5">密码</label>
+        <input name="password" type="password" autocomplete="current-password" required
+          class="field w-full rounded-xl px-4 py-3 text-[14px] bg-white/70"
+          placeholder="请输入密码" />
+      </div>
+
+      <!-- OAuth 上下文透传字段（由 /oauth/authorize 注入） -->
+      <input type="hidden" name="response_type" value="{{RESPONSE_TYPE}}" />
+      <input type="hidden" name="appId" value="{{APP_ID}}" />
+      <input type="hidden" name="redirectUri" value="{{REDIRECT_URI}}" />
+      <input type="hidden" name="scope" value="{{SCOPE}}" />
+      <input type="hidden" name="state" value="{{STATE}}" />
+      <input type="hidden" name="code_challenge" value="{{CODE_CHALLENGE}}" />
+      <input type="hidden" name="code_challenge_method" value="{{CODE_CHALLENGE_METHOD}}" />
+      <input type="hidden" name="nonce" value="{{NONCE}}" />
+
+      {{ERROR}}
+
+      <p data-demo-hint style="display:none" class="mt-1 text-[12px] text-[#2563EB] bg-blue-50/60 rounded-lg px-3 py-2">
+        演示账号已预填：<b>demo</b> / <b>demo123</b>，直接点击登录即可体验单点登录。
+      </p>
+
+      <button type="submit"
+        class="btn-primary mt-2 w-full rounded-xl py-3 text-[15px] font-medium text-white">
+        登 录
+      </button>
+    </form>
+
+    <p class="mt-6 text-center text-[12px] text-[#94A3B8]">
+      本系统通过 HTTPS 加密传输，保障您的账号安全
+    </p>
+  </main>
+
+  <script>
+    // 仅在演示业务系统（demo-sp）场景下预填演示账号并展示提示
+    var appIdEl = document.querySelector('input[name="appId"]');
+    if (appIdEl && appIdEl.value === 'demo-sp') {
+      var hint = document.querySelector('[data-demo-hint]');
+      if (hint) hint.style.display = 'block';
+      var u = document.querySelector('input[name="username"]');
+      var p = document.querySelector('input[name="password"]');
+      if (u && !u.value) u.value = 'demo';
+      if (p && !p.value) p.value = 'demo123';
+    }
+  </script>
+</body>
+</html>

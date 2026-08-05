@@ -1,0 +1,13 @@
+{
+  "name": "@nestjs-sso/eslint-config",
+  "version": "1.0.0",
+  "private": true,
+  "description": "共享 ESLint 配置（NestJS 后端）",
+  "main": "base.js",
+  "exports": {
+    ".": "./base.js"
+  },
+  "peerDependencies": {
+    "eslint": ">=8"
+  }
+}

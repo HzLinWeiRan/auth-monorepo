@@ -1,0 +1,9 @@
+dist/
+.next/
+node_modules/
+coverage/
+*.sqlite
+*.sqlite-journal
+package-lock.json
+.env
+.env.local

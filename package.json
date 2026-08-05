@@ -1,0 +1,40 @@
+{
+  "name": "nestjs-sso-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "基于 NestJS 的单点登录（SSO）统一认证中心 - Monorepo",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "tools/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces --if-present",
+    "dev:server": "npm run dev -w apps/server",
+    "dev:admin": "npm run dev -w apps/admin-web",
+    "dev:shared": "npm run dev -w packages/shared",
+    "build": "npm run build --workspaces --if-present",
+    "build:server": "npm run build -w apps/server",
+    "build:admin": "npm run build -w apps/admin-web",
+    "build:shared": "npm run build -w packages/shared",
+    "start:server": "npm run start:prod -w apps/server",
+    "start:admin": "npm run start -w apps/admin-web",
+    "lint": "npm run lint --workspaces --if-present",
+    "lint:server": "npm run lint -w apps/server",
+    "lint:admin": "npm run lint -w apps/admin-web",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,css}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,css}\"",
+    "test": "npm run test --workspaces --if-present",
+    "test:server": "npm run test -w apps/server",
+    "test:e2e": "npm run test:e2e -w apps/server",
+    "clean": "npm run clean --workspaces --if-present && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.0",
+    "typescript": "^5.5.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
