@@ -20,6 +20,7 @@ import {
   Users,
   AppWindow,
   Activity,
+  BookOpen,
   LogOut,
   Shield,
   User,
@@ -58,6 +59,7 @@ const navItems = [
   { href: '/dashboard/users', icon: Users, label: '用户管理', adminOnly: true },
   { href: '/dashboard/apps', icon: AppWindow, label: '应用管理', adminOnly: false },
   { href: '/dashboard/activity', icon: Activity, label: '活动记录', adminOnly: false },
+  { href: '/dashboard/guide', icon: BookOpen, label: '接入教程', adminOnly: false },
 ];
 
 // ---- Props ----
@@ -147,7 +149,7 @@ export function DashboardLayoutClient({ user, superAdmin, children }: Props) {
       {/* ============== 主内容区域 ============== */}
       <SidebarInset>
         {/* 顶部导航栏 */}
-        <header className="flex h-14 shrink-0 items-center justify-between border-b bg-card px-6">
+        <header className="flex h-14 shrink-0 items-center justify-between border-b bg-card px-6 sticky top-0 z-10">
           <SidebarTrigger />
           <div className="flex items-center gap-1">
             <ThemeCustomizer />
