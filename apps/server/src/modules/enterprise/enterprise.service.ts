@@ -1,6 +1,6 @@
 import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 import { Enterprise } from './enterprise.entity';
 import { CreateEnterpriseDto } from './dto/create-enterprise.dto';
 import { UpdateEnterpriseDto } from './dto/update-enterprise.dto';
@@ -23,8 +23,14 @@ export class EnterpriseService {
     return this.enterpriseRepo.save(enterprise);
   }
 
-  async findAll(page = 1, pageSize = 20): Promise<{ items: Enterprise[]; total: number }> {
+  async findAll(page = 1, pageSize = 20, search?: string): Promise<{ items: Enterprise[]; total: number }> {
     const [items, total] = await this.enterpriseRepo.findAndCount({
+      where: search
+        ? [
+            { isDeleted: false, name: Like(`%${search}%`) },
+            { isDeleted: false, slug: Like(`%${search}%`) },
+          ]
+        : { isDeleted: false },
       order: { createdAt: 'DESC' },
       skip: (page - 1) * pageSize,
       take: pageSize,
@@ -64,8 +70,8 @@ export class EnterpriseService {
 
   async remove(id: string): Promise<void> {
     const enterprise = await this.findById(id);
-    // 软删除：标记为 disabled 而非物理删除
-    enterprise.status = 'disabled';
+    // 软删除：标记 isDeleted = true
+    enterprise.isDeleted = true;
     await this.enterpriseRepo.save(enterprise);
   }
 }

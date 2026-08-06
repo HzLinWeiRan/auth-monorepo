@@ -1,12 +1,16 @@
 import Cookies from 'js-cookie';
-import api from './api';
+import { Admin } from './hey-api-client';
 import type { AdminUser, LoginResponse } from '@nestjs-sso/shared';
 
 export async function login(username: string, password: string): Promise<LoginResponse> {
-  const data = await api.post('/admin/login', { username, password }) as unknown as LoginResponse;
-  Cookies.set('admin_token', data.accessToken, { expires: 1 }); // 1 day
-  Cookies.set('admin_user', JSON.stringify(data.user), { expires: 1 });
-  return data;
+  const { data, error } = await Admin.adminLogin({ body: { username, password } });
+  if (error || !data) {
+    throw error ?? new Error('登录失败');
+  }
+  const result = data as LoginResponse;
+  Cookies.set('admin_token', result.accessToken, { expires: 1 }); // 1 day
+  Cookies.set('admin_user', JSON.stringify(result.user), { expires: 1 });
+  return result;
 }
 
 export function logout(): void {

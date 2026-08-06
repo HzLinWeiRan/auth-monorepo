@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 import { randomBytes } from 'crypto';
 import { App } from './app.entity';
 import { CreateAppDto } from './dto/create-app.dto';
@@ -71,12 +71,27 @@ export class AppService {
     }
   }
 
-  /** 获取企业下应用列表 */
-  async findByEnterpriseId(enterpriseId: string): Promise<App[]> {
+  /** 获取企业下应用列表（支持搜索） */
+  async findByEnterpriseId(enterpriseId: string, search?: string): Promise<App[]> {
     return this.appRepo.find({
-      where: { enterpriseId },
+      where: search
+        ? [
+            { enterpriseId, name: Like(`%${search}%`) },
+            { enterpriseId, appId: Like(`%${search}%`) },
+          ]
+        : { enterpriseId },
       order: { createdAt: 'DESC' },
     });
+  }
+
+  /** 更新应用（可编辑名称、回调地址、品牌配置等业务字段） */
+  async update(appId: string, dto: { name?: string; redirectUri?: string; logoutCallbackUrl?: string; logoUrl?: string; primaryColor?: string }): Promise<App> {
+    const app = await this.appRepo.findOne({ where: { appId } });
+    if (!app) {
+      throw new NotFoundException('应用不存在');
+    }
+    Object.assign(app, dto);
+    return this.appRepo.save(app);
   }
 
   /** 统计企业下应用数 */

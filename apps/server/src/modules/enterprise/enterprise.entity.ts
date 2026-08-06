@@ -26,9 +26,13 @@ export class Enterprise {
   @Column({ length: 64, unique: true })
   slug: string;
 
-  /** 企业状态：active（正常）/ disabled（禁用，该企业下所有用户无法登录） */
-  @Column({ type: 'varchar', length: 16, default: 'active' })
-  status: string;
+  /** 软删除标记：true 表示已删除，查询时排除 */
+  @Column({ name: 'is_deleted', type: 'boolean', default: false })
+  isDeleted: boolean;
+
+  /** 启用标记：true 表示正常启用，false 表示已禁用，该企业下所有用户无法登录 */
+  @Column({ name: 'is_enabled', type: 'boolean', default: true })
+  isEnabled: boolean;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

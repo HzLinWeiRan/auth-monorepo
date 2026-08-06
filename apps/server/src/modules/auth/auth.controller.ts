@@ -27,7 +27,7 @@ export class AuthController {
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: '账号密码登录，签发双 Token 并建立全局会话' })
+  @ApiOperation({ operationId: 'authLogin', summary: '账号密码登录，签发双 Token 并建立全局会话' })
   @ApiResponse({ status: 201, description: '登录成功，返回 Token 与全局会话标识' })
   @ApiResponse({ status: 401, description: '用户名或密码错误' })
   async login(@Body() dto: LoginDto) {
@@ -38,7 +38,7 @@ export class AuthController {
   @Public()
   @Post('validate')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '校验 Token 有效性（依据全局会话），供 SP 二次免登录判断' })
+  @ApiOperation({ operationId: 'authValidate', summary: '校验 Token 有效性（依据全局会话），供 SP 二次免登录判断' })
   @ApiResponse({ status: 200, description: '返回 valid 与用户信息' })
   async validate(@Body() dto: ValidateDto) {
     const result = await this.auth.validateToken(dto);
@@ -48,7 +48,7 @@ export class AuthController {
   @Public()
   @Post('session/ping')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '轻量会话探活：仅判断全局会话是否有效（供 SP 定时调用）' })
+  @ApiOperation({ operationId: 'authSessionPing', summary: '轻量会话探活：仅判断全局会话是否有效（供 SP 定时调用）' })
   @ApiResponse({ status: 200, description: '返回 alive 状态' })
   async pingSession(@Body() dto: SessionPingDto) {
     const result = await this.auth.pingSession(dto.sessionId);

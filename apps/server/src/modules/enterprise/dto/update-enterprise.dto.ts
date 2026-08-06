@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsIn, MaxLength, Matches } from 'class-validator';
+import { IsOptional, IsString, IsBoolean, MaxLength, Matches } from 'class-validator';
 
 export class UpdateEnterpriseDto {
   @ApiPropertyOptional({ description: '企业名称', example: '腾讯科技有限公司' })
@@ -15,9 +15,8 @@ export class UpdateEnterpriseDto {
   @Matches(/^[a-z0-9-]+$/, { message: '企业标识只能包含小写字母、数字和短横线' })
   slug?: string;
 
-  @ApiPropertyOptional({ description: '企业状态：active / disabled', example: 'disabled' })
+  @ApiPropertyOptional({ description: '是否启用企业', example: true })
   @IsOptional()
-  @IsString()
-  @IsIn(['active', 'disabled'])
-  status?: string;
+  @IsBoolean()
+  isEnabled?: boolean;
 }

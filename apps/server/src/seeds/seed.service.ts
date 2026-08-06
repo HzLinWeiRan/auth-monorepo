@@ -34,7 +34,6 @@ export class SeedService implements OnModuleInit {
       enterprise = this.enterpriseRepo.create({
         name: '默认企业',
         slug: 'default',
-        status: 'active',
       });
       enterprise = await this.enterpriseRepo.save(enterprise);
       this.logger.log('已创建默认企业');
@@ -55,7 +54,6 @@ export class SeedService implements OnModuleInit {
         passwordHash,
         roles: 'super_admin',
         enterpriseId: null,
-        status: 'active',
       });
       await this.userRepo.save(user);
       this.logger.log('已创建超级管理员: admin / Admin@123');
@@ -76,7 +74,6 @@ export class SeedService implements OnModuleInit {
           passwordHash,
           roles: 'enterprise_admin',
           enterpriseId: enterprise.id,
-          status: 'active',
         });
         await this.userRepo.save(user);
         this.logger.log('已创建企业管理员: entadmin / Admin@123');

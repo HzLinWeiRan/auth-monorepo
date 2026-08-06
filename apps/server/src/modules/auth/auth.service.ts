@@ -32,7 +32,6 @@ export interface PublicUser {
   id: string;
   username: string;
   email?: string;
-  status?: string;
   enterpriseId?: string;
   roles?: string;
 }
@@ -79,7 +78,6 @@ export class AuthService {
       id: user.id,
       username: user.username,
       email: user.email,
-      status: user.status,
       enterpriseId: user.enterpriseId,
       roles: user.roles,
     };
@@ -87,7 +85,7 @@ export class AuthService {
 
   /**
    * 签发双 Token（Access + Refresh）。
-   * - 有 appId → RS256 签名（使用该应用的私钥），JWT header 携带 kid，payload 含 email/status/appId
+   * - 有 appId → RS256 签名（使用该应用的私钥），JWT header 携带 kid，payload 含 email/appId
    * - 无 appId → HS256 签名（全局密钥），用于 SSO 内部登录
    */
   private async issueTokens(
@@ -99,7 +97,6 @@ export class AuthService {
       sub: user.id,
       username: user.username,
       email: user.email,
-      status: user.status,
       sessionId,
       enterpriseId: user.enterpriseId,
       roles: user.roles,
@@ -172,6 +169,7 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('用户名或密码错误');
     }
+    
     const ok = await this.users.validatePassword(user, dto.password);
     if (!ok) {
       throw new UnauthorizedException('用户名或密码错误');
@@ -358,7 +356,6 @@ export class AuthService {
       sub: user.id,
       username: user.username,
       email: user.email,
-      status: user.status,
       sessionId: session.sessionId,
       appId,
       scope: scopes.join(' '),
@@ -456,7 +453,6 @@ export class AuthService {
       sub: user.id,
       username: user.username,
       email: user.email,
-      status: user.status,
       sessionId,
       appId: dto.client_id,
       scope: rotateResult.scopes.join(' '),

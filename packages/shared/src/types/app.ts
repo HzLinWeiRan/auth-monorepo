@@ -7,7 +7,6 @@ export interface AppInfo {
   logoutCallbackUrl?: string;
   applicationType: string;
   tokenEndpointAuthMethod: string;
-  status?: string;
   enterpriseId?: string;
   logoUrl?: string;
   primaryColor?: string;

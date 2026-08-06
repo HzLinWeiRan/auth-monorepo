@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsEmail, IsOptional, MaxLength, IsIn } from 'class-validator';
+import { IsString, IsEmail, IsOptional, MaxLength, IsIn, IsBoolean } from 'class-validator';
 
 export class AdminUpdateUserDto {
   @ApiPropertyOptional({ example: 'zhangsan@example.com', description: '邮箱' })
@@ -8,11 +8,10 @@ export class AdminUpdateUserDto {
   @MaxLength(128)
   email?: string;
 
-  @ApiPropertyOptional({ example: 'active', description: '状态：active / disabled' })
+  @ApiPropertyOptional({ example: true, description: '是否启用用户' })
   @IsOptional()
-  @IsString()
-  @IsIn(['active', 'disabled'])
-  status?: string;
+  @IsBoolean()
+  isEnabled?: boolean;
 
   @ApiPropertyOptional({ example: 'enterprise_admin', description: '角色' })
   @IsOptional()

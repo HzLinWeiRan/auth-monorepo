@@ -1,0 +1,1992 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "AppController_health",
+        "summary": "健康检查",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "服务正常"
+          }
+        },
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/api/v1/users/register": {
+      "post": {
+        "operationId": "UserController_register",
+        "summary": "注册新用户",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "注册成功，返回用户基本信息（不含密码）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegisterResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "用户名已存在",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/api/v1/users/profile": {
+      "get": {
+        "operationId": "UserController_profile",
+        "summary": "获取当前登录用户资料",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "成功，返回当前登录用户的完整资料（含创建时间）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未携带或令牌无效",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "users"
+        ],
+        "security": [
+          {
+            "access-token": []
+          }
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "authLogin",
+        "summary": "账号密码登录，签发双 Token 并建立全局会话",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "登录成功，返回 Token 与全局会话标识"
+          },
+          "401": {
+            "description": "用户名或密码错误"
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/validate": {
+      "post": {
+        "operationId": "authValidate",
+        "summary": "校验 Token 有效性（依据全局会话），供 SP 二次免登录判断",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "返回 valid 与用户信息"
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/session/ping": {
+      "post": {
+        "operationId": "authSessionPing",
+        "summary": "轻量会话探活：仅判断全局会话是否有效（供 SP 定时调用）",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionPingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "返回 alive 状态"
+          }
+        },
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/.well-known/jwks.json": {
+      "get": {
+        "operationId": "JwksController_getJwks",
+        "summary": "JWKS 端点：返回所有应用 RSA-2048 公钥（RS256）",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "JWKS 公钥集合，每个 key 含 kid/alg/kty/n/e"
+          }
+        },
+        "tags": [
+          "jwks"
+        ]
+      }
+    },
+    "/oauth/authorize": {
+      "get": {
+        "operationId": "OAuthController_authorize",
+        "summary": "OAuth 2.0 授权端点（Authorization Code Flow）",
+        "parameters": [
+          {
+            "name": "response_type",
+            "required": true,
+            "in": "query",
+            "description": "授权类型，固定为 \"code\"",
+            "schema": {
+              "example": "code",
+              "type": "string"
+            }
+          },
+          {
+            "name": "client_id",
+            "required": true,
+            "in": "query",
+            "description": "OAuth 客户端标识",
+            "schema": {
+              "example": "demo-sp",
+              "type": "string"
+            }
+          },
+          {
+            "name": "redirect_uri",
+            "required": true,
+            "in": "query",
+            "description": "授权成功后的回调地址",
+            "schema": {
+              "example": "http://localhost:3000/sp/callback",
+              "type": "string"
+            }
+          },
+          {
+            "name": "scope",
+            "required": false,
+            "in": "query",
+            "description": "请求的作用域（空格分隔），如 \"openid profile email\"",
+            "schema": {
+              "example": "openid profile email",
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "required": false,
+            "in": "query",
+            "description": "透传给 SP 的 opaque 状态值，用于防 CSRF",
+            "schema": {
+              "example": "xyz123",
+              "type": "string"
+            }
+          },
+          {
+            "name": "code_challenge",
+            "required": false,
+            "in": "query",
+            "description": "PKCE code_challenge",
+            "schema": {
+              "example": "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+              "type": "string"
+            }
+          },
+          {
+            "name": "code_challenge_method",
+            "required": false,
+            "in": "query",
+            "description": "PKCE 变换方法：S256 或 plain",
+            "schema": {
+              "example": "S256",
+              "type": "string"
+            }
+          },
+          {
+            "name": "nonce",
+            "required": false,
+            "in": "query",
+            "description": "OIDC nonce",
+            "schema": {
+              "example": "n-0S6_WzA2Mj",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "302 跳转：已登录回调 SP（携带 code），未登录跳登录页"
+          },
+          "401": {
+            "description": "回调地址不匹配"
+          },
+          "404": {
+            "description": "未知应用"
+          }
+        },
+        "tags": [
+          "oauth"
+        ]
+      }
+    },
+    "/oauth/login": {
+      "get": {
+        "operationId": "OAuthController_loginPage",
+        "summary": "渲染 OAuth 登录页",
+        "parameters": [
+          {
+            "name": "response_type",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "client_id",
+            "required": false,
+            "in": "query",
+            "description": "OAuth 客户端标识",
+            "schema": {
+              "example": "demo-sp",
+              "type": "string"
+            }
+          },
+          {
+            "name": "redirect_uri",
+            "required": false,
+            "in": "query",
+            "description": "回调地址",
+            "schema": {
+              "example": "http://localhost:3000/sp/callback",
+              "type": "string"
+            }
+          },
+          {
+            "name": "scope",
+            "required": false,
+            "in": "query",
+            "description": "请求的作用域",
+            "schema": {
+              "example": "openid profile email",
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "required": false,
+            "in": "query",
+            "description": "透传状态值",
+            "schema": {
+              "example": "xyz123",
+              "type": "string"
+            }
+          },
+          {
+            "name": "code_challenge",
+            "required": false,
+            "in": "query",
+            "description": "PKCE code_challenge",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "code_challenge_method",
+            "required": false,
+            "in": "query",
+            "description": "PKCE 方法",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "nonce",
+            "required": false,
+            "in": "query",
+            "description": "OIDC nonce",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "error",
+            "required": false,
+            "in": "query",
+            "description": "上次登录失败时的错误提示信息",
+            "schema": {
+              "example": "用户名或密码错误",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "返回登录页 HTML"
+          }
+        },
+        "tags": [
+          "oauth"
+        ]
+      },
+      "post": {
+        "operationId": "OAuthController_loginSubmit",
+        "summary": "提交 OAuth 登录表单",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SsoLoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "302": {
+            "description": "登录成功：写全局会话 Cookie 后回跳 /oauth/authorize"
+          },
+          "401": {
+            "description": "登录失败：带 error 参数重定向回登录页"
+          }
+        },
+        "tags": [
+          "oauth"
+        ]
+      }
+    },
+    "/oauth/endsession": {
+      "get": {
+        "operationId": "OAuthController_endSession",
+        "summary": "OIDC RP-Initiated Logout",
+        "parameters": [
+          {
+            "name": "id_token_hint",
+            "required": true,
+            "in": "query",
+            "description": "ID Token（用于标识待登出的会话）",
+            "schema": {
+              "example": "eyJhbGciOi...",
+              "type": "string"
+            }
+          },
+          {
+            "name": "post_logout_redirect_uri",
+            "required": false,
+            "in": "query",
+            "description": "登出后的回调地址",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "required": false,
+            "in": "query",
+            "description": "透传状态值",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "登出成功：302 跳转至 post_logout_redirect_uri"
+          },
+          "401": {
+            "description": "id_token_hint 无效"
+          }
+        },
+        "tags": [
+          "oauth"
+        ]
+      }
+    },
+    "/oauth/token": {
+      "post": {
+        "operationId": "TokenController_token",
+        "summary": "OAuth 2.0 Token 端点（authorization_code / refresh_token）",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "换发成功，返回 access_token、refresh_token、id_token、scope",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "客户端认证失败 / 授权码无效 / 刷新令牌无效"
+          }
+        },
+        "tags": [
+          "oauth"
+        ]
+      }
+    },
+    "/oauth/introspect": {
+      "post": {
+        "operationId": "TokenController_introspect",
+        "summary": "Token Introspection（RFC 7662）",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IntrospectionRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "返回 Token 的 active 状态及元信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntrospectionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "oauth"
+        ]
+      }
+    },
+    "/oauth/revoke": {
+      "post": {
+        "operationId": "TokenController_revoke",
+        "summary": "Token Revocation（RFC 7009）",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevocationRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "吊销成功（无论 Token 是否存在均返回 200）"
+          }
+        },
+        "tags": [
+          "oauth"
+        ]
+      }
+    },
+    "/oauth/userinfo": {
+      "get": {
+        "operationId": "TokenController_userinfo",
+        "summary": "OIDC UserInfo 端点",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "返回当前用户 claims（按 scope）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserInfoResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "未携带或令牌无效"
+          }
+        },
+        "tags": [
+          "oauth"
+        ],
+        "security": [
+          {
+            "access-token": []
+          }
+        ]
+      }
+    },
+    "/.well-known/openid-configuration": {
+      "get": {
+        "operationId": "DiscoveryController_getConfiguration",
+        "summary": "OIDC Discovery 端点（RFC 8414）",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "返回 OpenID Provider 配置元数据"
+          }
+        },
+        "tags": [
+          "oidc"
+        ]
+      }
+    },
+    "/api/v1/apps": {
+      "post": {
+        "operationId": "AppController_create",
+        "summary": "注册 SP 应用，生成 appId、secret 与 RSA-2048 密钥对（私钥仅此一次返回）",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAppDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "注册成功，返回含 secret、publicKey、privateKey、kid 的完整应用信息"
+          },
+          "401": {
+            "description": "未登录"
+          }
+        },
+        "tags": [
+          "apps"
+        ],
+        "security": [
+          {
+            "access-token": []
+          }
+        ]
+      },
+      "get": {
+        "operationId": "AppController_list",
+        "summary": "查询已注册的应用列表（不含 secret 和 privateKey，含 publicKey）",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "应用列表"
+          }
+        },
+        "tags": [
+          "apps"
+        ],
+        "security": [
+          {
+            "access-token": []
+          }
+        ]
+      }
+    },
+    "/api/v1/apps/{appId}": {
+      "get": {
+        "operationId": "AppController_detail",
+        "summary": "按 appId 查询应用详情（不含 secret 和 privateKey，含 publicKey）",
+        "parameters": [
+          {
+            "name": "appId",
+            "required": true,
+            "in": "path",
+            "description": "应用标识",
+            "schema": {
+              "example": "app_1a2b3c4d5e6f7a8b",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "应用详情"
+          },
+          "404": {
+            "description": "应用不存在"
+          }
+        },
+        "tags": [
+          "apps"
+        ],
+        "security": [
+          {
+            "access-token": []
+          }
+        ]
+      },
+      "delete": {
+        "operationId": "AppController_remove",
+        "summary": "删除应用",
+        "parameters": [
+          {
+            "name": "appId",
+            "required": true,
+            "in": "path",
+            "description": "应用标识",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功"
+          },
+          "404": {
+            "description": "应用不存在"
+          }
+        },
+        "tags": [
+          "apps"
+        ],
+        "security": [
+          {
+            "access-token": []
+          }
+        ]
+      }
+    },
+    "/sp": {
+      "get": {
+        "operationId": "DemoSpController_home",
+        "summary": "SP 受保护资源首页（无会话则跳转 IdP 登录）",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "已登录，返回受保护资源 HTML"
+          },
+          "302": {
+            "description": "无会话或会话失效，302 跳转至 /oauth/authorize"
+          }
+        },
+        "tags": [
+          "sp-demo"
+        ]
+      }
+    },
+    "/sp/callback": {
+      "get": {
+        "operationId": "DemoSpController_callback",
+        "summary": "SP 回调：用 Authorization Code 换取 Token 并建立本地会话",
+        "parameters": [
+          {
+            "name": "code",
+            "required": false,
+            "in": "query",
+            "description": "OAuth 2.0 Authorization Code",
+            "schema": {
+              "example": "a1b2c3d4...",
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "required": false,
+            "in": "query",
+            "description": "防 CSRF 状态值",
+            "schema": {
+              "example": "xyz123"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "换票后 302 跳转至 SP 首页"
+          }
+        },
+        "tags": [
+          "sp-demo"
+        ]
+      }
+    },
+    "/sp/logout": {
+      "get": {
+        "operationId": "DemoSpController_logout",
+        "summary": "SP 发起 OIDC RP-Initiated Logout",
+        "parameters": [],
+        "responses": {
+          "302": {
+            "description": "302 跳转至 /oauth/endsession"
+          }
+        },
+        "tags": [
+          "sp-demo"
+        ]
+      }
+    },
+    "/sp/slo": {
+      "post": {
+        "operationId": "DemoSpController_slo",
+        "summary": "SLO 广播接收端：清除本地会话",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "已清除本地会话"
+          }
+        },
+        "tags": [
+          "sp-demo"
+        ]
+      }
+    },
+    "/api/v1/enterprises": {
+      "post": {
+        "operationId": "createEnterprise",
+        "summary": "创建企业（超级管理员）",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEnterpriseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "企业创建成功"
+          },
+          "409": {
+            "description": "企业标识已存在"
+          }
+        },
+        "tags": [
+          "enterprises"
+        ]
+      },
+      "get": {
+        "operationId": "getEnterprises",
+        "summary": "企业列表（超级管理员）",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "页码",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "description": "每页数量",
+            "schema": {
+              "example": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "企业列表"
+          }
+        },
+        "tags": [
+          "enterprises"
+        ]
+      }
+    },
+    "/api/v1/enterprises/{id}": {
+      "get": {
+        "operationId": "getEnterpriseById",
+        "summary": "企业详情（超级管理员）",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "企业详情"
+          },
+          "404": {
+            "description": "企业不存在"
+          }
+        },
+        "tags": [
+          "enterprises"
+        ]
+      },
+      "patch": {
+        "operationId": "updateEnterprise",
+        "summary": "更新企业（超级管理员）",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEnterpriseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功"
+          },
+          "404": {
+            "description": "企业不存在"
+          },
+          "409": {
+            "description": "企业标识已存在"
+          }
+        },
+        "tags": [
+          "enterprises"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteEnterprise",
+        "summary": "删除企业（超级管理员，软删除为 disabled）",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功"
+          },
+          "404": {
+            "description": "企业不存在"
+          }
+        },
+        "tags": [
+          "enterprises"
+        ]
+      }
+    },
+    "/api/v1/admin/login": {
+      "post": {
+        "operationId": "adminLogin",
+        "summary": "管理后台登录",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminLoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "登录成功，返回 accessToken 与用户信息"
+          },
+          "401": {
+            "description": "用户名或密码错误"
+          },
+          "403": {
+            "description": "无管理后台权限"
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/me": {
+      "get": {
+        "operationId": "getAdminMe",
+        "summary": "获取当前管理员信息",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "当前管理员信息"
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/overview": {
+      "get": {
+        "operationId": "getAdminOverview",
+        "summary": "系统概览统计（超级管理员）",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "概览统计信息"
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/enterprises/{id}/users": {
+      "get": {
+        "operationId": "getEnterpriseUsersBySuperAdmin",
+        "summary": "企业下用户列表（超级管理员）",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "页码",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "description": "每页数量",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "用户列表"
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/enterprises/{id}/apps": {
+      "get": {
+        "operationId": "getEnterpriseAppsBySuperAdmin",
+        "summary": "企业下应用列表（超级管理员）",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "应用列表"
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/enterprise/users": {
+      "get": {
+        "operationId": "getEnterpriseUsers",
+        "summary": "本企业用户列表（企业管理员）",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "页码",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "description": "每页数量",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "用户列表"
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "createEnterpriseUser",
+        "summary": "创建本企业用户（企业管理员）",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "用户创建成功"
+          },
+          "409": {
+            "description": "该企业内用户名已存在"
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/enterprise/users/{id}": {
+      "patch": {
+        "operationId": "updateEnterpriseUser",
+        "summary": "更新用户（企业管理员）",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功"
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteEnterpriseUser",
+        "summary": "删除用户（企业管理员，软删除）",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功"
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/enterprise/apps": {
+      "get": {
+        "operationId": "getEnterpriseApps",
+        "summary": "本企业应用列表（企业管理员）",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "应用列表"
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      },
+      "post": {
+        "operationId": "createEnterpriseApp",
+        "summary": "创建本企业应用（企业管理员）",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAppDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "应用创建成功"
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    },
+    "/api/v1/admin/enterprise/apps/{appId}": {
+      "delete": {
+        "operationId": "deleteEnterpriseApp",
+        "summary": "删除应用（企业管理员）",
+        "parameters": [
+          {
+            "name": "appId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功"
+          }
+        },
+        "tags": [
+          "admin"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "SSO 统一认证中心 API",
+    "description": "基于 NestJS 的单点登录（SSO）系统接口文档，符合 OAuth 2.0 / OpenID Connect 标准。\n\n**OAuth 2.0 / OIDC 标准流程（所有 OAuth 端点均在根路径 `/oauth/*`，无 API 前缀）：**\n1. SP 302 跳转 `GET /oauth/authorize?response_type=code&client_id=...&redirect_uri=...&scope=...`\n2. 已登录 → 签发 Authorization Code 并 302 回调 SP；未登录 → 跳转登录页\n3. SP 调用 `POST /oauth/token`（grant_type=authorization_code）换取 access_token + id_token + refresh_token\n4. SP 调用 `GET /oauth/userinfo` 获取用户信息\n5. SP 调用 `POST /oauth/introspect` 校验 Token 有效性\n6. SP 调用 `GET /oauth/endsession` 发起单点登出",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "oauth",
+      "description": "OAuth 2.0 / OIDC 标准接口"
+    },
+    {
+      "name": "oidc",
+      "description": "OIDC Discovery & JWKS 端点"
+    },
+    {
+      "name": "auth",
+      "description": "认证与会话管理"
+    },
+    {
+      "name": "users",
+      "description": "用户管理接口"
+    },
+    {
+      "name": "apps",
+      "description": "业务系统（SP）管理接口"
+    },
+    {
+      "name": "jwks",
+      "description": "公钥集端点（.well-known）"
+    }
+  ],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "access-token": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "RegisterDto": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "example": "alice",
+            "description": "用户名（3-32 位）"
+          },
+          "password": {
+            "type": "string",
+            "example": "Str0ng@Pass",
+            "description": "密码（至少 6 位）"
+          },
+          "email": {
+            "type": "string",
+            "example": "alice@example.com",
+            "description": "邮箱"
+          }
+        },
+        "required": [
+          "username",
+          "password"
+        ]
+      },
+      "UserDataDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "用户 ID（UUID）",
+            "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+          },
+          "username": {
+            "type": "string",
+            "description": "用户名",
+            "example": "alice"
+          },
+          "email": {
+            "type": "string",
+            "description": "邮箱（注册时可选，可能为 null）",
+            "example": "alice@example.com",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "账号状态：active 正常 / disabled 禁用",
+            "example": "active"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "email",
+          "status"
+        ]
+      },
+      "RegisterResponseDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "number",
+            "description": "业务状态码",
+            "example": 201
+          },
+          "message": {
+            "type": "string",
+            "description": "提示信息",
+            "example": "注册成功"
+          },
+          "data": {
+            "description": "注册成功的用户信息",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserDataDto"
+              }
+            ]
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "响应时间戳（ISO 8601）",
+            "example": "2026-08-04T10:00:00.000Z"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "timestamp"
+        ]
+      },
+      "ErrorResponseDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "number",
+            "description": "业务状态码（等同于 HTTP 状态码）",
+            "example": 401
+          },
+          "message": {
+            "type": "string",
+            "description": "错误描述",
+            "example": "未携带或令牌无效"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "响应时间戳（ISO 8601）",
+            "example": "2026-08-04T10:00:00.000Z"
+          },
+          "path": {
+            "type": "string",
+            "description": "请求路径",
+            "example": "/api/v1/users/profile"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "timestamp",
+          "path"
+        ]
+      },
+      "UserProfileDataDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "用户 ID（UUID）",
+            "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+          },
+          "username": {
+            "type": "string",
+            "description": "用户名",
+            "example": "alice"
+          },
+          "email": {
+            "type": "string",
+            "description": "邮箱（注册时可选，可能为 null）",
+            "example": "alice@example.com",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "账号状态：active 正常 / disabled 禁用",
+            "example": "active"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "创建时间（ISO 8601）",
+            "example": "2026-08-04T10:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "email",
+          "status",
+          "createdAt"
+        ]
+      },
+      "ProfileResponseDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "number",
+            "description": "业务状态码",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "description": "提示信息",
+            "example": "success"
+          },
+          "data": {
+            "description": "当前登录用户资料",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserProfileDataDto"
+              }
+            ]
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "响应时间戳（ISO 8601）",
+            "example": "2026-08-04T10:00:00.000Z"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "data",
+          "timestamp"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "example": "alice",
+            "description": "用户名"
+          },
+          "password": {
+            "type": "string",
+            "example": "Str0ng@Pass",
+            "description": "密码"
+          }
+        },
+        "required": [
+          "username",
+          "password"
+        ]
+      },
+      "ValidateDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "example": "eyJhbGciOi...",
+            "description": "待校验的 Access Token"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "SessionPingDto": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "description": "全局会话标识",
+            "example": "550e8400-e29b-41d4-a716-446655440000"
+          }
+        },
+        "required": [
+          "sessionId"
+        ]
+      },
+      "SsoLoginDto": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "example": "alice",
+            "description": "用户名"
+          },
+          "password": {
+            "type": "string",
+            "example": "Str0ng@Pass",
+            "description": "密码"
+          },
+          "response_type": {
+            "type": "string",
+            "description": "OAuth 授权类型，固定为 \"code\"",
+            "example": "code"
+          },
+          "appId": {
+            "type": "string",
+            "description": "业务系统标识（OAuth client_id）",
+            "example": "demo-sp"
+          },
+          "redirectUri": {
+            "type": "string",
+            "description": "登录成功后的回调地址",
+            "example": "http://localhost:3000/sp/callback"
+          },
+          "scope": {
+            "type": "string",
+            "description": "请求的作用域（空格分隔）",
+            "example": "openid profile email"
+          },
+          "state": {
+            "type": "string",
+            "description": "透传给 SP 的 opaque 状态值，用于防 CSRF",
+            "example": "xyz123"
+          },
+          "code_challenge": {
+            "type": "string",
+            "description": "PKCE code_challenge",
+            "example": "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM"
+          },
+          "code_challenge_method": {
+            "type": "string",
+            "description": "PKCE 变换方法：S256 或 plain",
+            "example": "S256"
+          },
+          "nonce": {
+            "type": "string",
+            "description": "OIDC nonce（随机字符串，防 id_token 重放）",
+            "example": "n-0S6_WzA2Mj"
+          }
+        },
+        "required": [
+          "username",
+          "password"
+        ]
+      },
+      "TokenRequestDto": {
+        "type": "object",
+        "properties": {
+          "grant_type": {
+            "type": "string",
+            "description": "授权类型：authorization_code 或 refresh_token",
+            "example": "authorization_code"
+          },
+          "code": {
+            "type": "string",
+            "description": "授权码（grant_type=authorization_code 时必填）",
+            "example": "a1b2c3d4e5f6g7h8..."
+          },
+          "redirect_uri": {
+            "type": "string",
+            "description": "回调地址（grant_type=authorization_code 时必填，须与授权请求一致）",
+            "example": "http://localhost:3000/sp/callback"
+          },
+          "client_id": {
+            "type": "string",
+            "description": "OAuth 客户端标识",
+            "example": "demo-sp"
+          },
+          "client_secret": {
+            "type": "string",
+            "description": "OAuth 客户端密钥（client_secret_post 认证方式）",
+            "example": "abc123..."
+          },
+          "code_verifier": {
+            "type": "string",
+            "description": "PKCE code_verifier（授权时使用了 code_challenge 则必填）",
+            "example": "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"
+          },
+          "refresh_token": {
+            "type": "string",
+            "description": "Refresh Token（grant_type=refresh_token 时必填）",
+            "example": "eyJhbGciOi..."
+          }
+        },
+        "required": [
+          "grant_type",
+          "client_id"
+        ]
+      },
+      "TokenResponseDto": {
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "description": "Access Token（JWT，用于访问受保护资源）",
+            "example": "eyJhbGciOiJSUzI1NiIs..."
+          },
+          "token_type": {
+            "type": "string",
+            "description": "Token 类型，固定为 \"Bearer\"",
+            "example": "Bearer"
+          },
+          "expires_in": {
+            "type": "number",
+            "description": "Access Token 有效期（秒）",
+            "example": 900
+          },
+          "refresh_token": {
+            "type": "string",
+            "description": "Refresh Token（JWT，用于换取新的 Access Token）",
+            "example": "eyJhbGciOiJSUzI1NiIs..."
+          },
+          "id_token": {
+            "type": "string",
+            "description": "ID Token（JWT，OIDC 身份令牌，scope 含 openid 时返回）",
+            "example": "eyJhbGciOiJSUzI1NiIs..."
+          },
+          "scope": {
+            "type": "string",
+            "description": "实际授予的作用域（空格分隔）",
+            "example": "openid profile email"
+          }
+        },
+        "required": [
+          "access_token",
+          "token_type",
+          "expires_in",
+          "scope"
+        ]
+      },
+      "IntrospectionRequestDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "待查询的 Token（access_token 或 refresh_token）",
+            "example": "eyJhbGciOi..."
+          },
+          "client_id": {
+            "type": "string",
+            "description": "OAuth 客户端标识，用于认证",
+            "example": "demo-sp"
+          },
+          "client_secret": {
+            "type": "string",
+            "description": "OAuth 客户端密钥",
+            "example": "abc123..."
+          }
+        },
+        "required": [
+          "token",
+          "client_id",
+          "client_secret"
+        ]
+      },
+      "IntrospectionResponseDto": {
+        "type": "object",
+        "properties": {
+          "active": {
+            "type": "boolean",
+            "description": "Token 是否仍然有效",
+            "example": true
+          },
+          "scope": {
+            "type": "string",
+            "description": "Token 关联的作用域（空格分隔）",
+            "example": "openid profile email"
+          },
+          "client_id": {
+            "type": "string",
+            "description": "Token 所属的客户端标识",
+            "example": "demo-sp"
+          },
+          "username": {
+            "type": "string",
+            "description": "资源所有者（用户名）",
+            "example": "alice"
+          },
+          "sub": {
+            "type": "string",
+            "description": "资源所有者唯一标识（sub claim）",
+            "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+          },
+          "exp": {
+            "type": "number",
+            "description": "Token 过期时间（Unix 时间戳）",
+            "example": 1722769200
+          },
+          "iat": {
+            "type": "number",
+            "description": "Token 签发时间（Unix 时间戳）",
+            "example": 1722768300
+          }
+        },
+        "required": [
+          "active"
+        ]
+      },
+      "RevocationRequestDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "待吊销的 Token（access_token 或 refresh_token）",
+            "example": "eyJhbGciOi..."
+          },
+          "client_id": {
+            "type": "string",
+            "description": "OAuth 客户端标识，用于认证",
+            "example": "demo-sp"
+          },
+          "client_secret": {
+            "type": "string",
+            "description": "OAuth 客户端密钥",
+            "example": "abc123..."
+          }
+        },
+        "required": [
+          "token",
+          "client_id",
+          "client_secret"
+        ]
+      },
+      "UserInfoResponseDto": {
+        "type": "object",
+        "properties": {
+          "sub": {
+            "type": "string",
+            "description": "用户唯一标识（sub claim，与 id_token 的 sub 一致）",
+            "example": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+          },
+          "name": {
+            "type": "string",
+            "description": "用户全名（scope: profile）",
+            "example": "Alice Wang"
+          },
+          "preferred_username": {
+            "type": "string",
+            "description": "首选用户名（scope: profile）",
+            "example": "alice"
+          },
+          "picture": {
+            "type": "string",
+            "description": "用户头像 URL（scope: profile）"
+          },
+          "email": {
+            "type": "string",
+            "description": "邮箱地址（scope: email）",
+            "example": "alice@example.com"
+          },
+          "email_verified": {
+            "type": "boolean",
+            "description": "邮箱是否已验证（scope: email）",
+            "example": false
+          }
+        },
+        "required": [
+          "sub"
+        ]
+      },
+      "CreateAppDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "应用名称",
+            "example": "订单管理系统"
+          },
+          "redirectUri": {
+            "type": "string",
+            "description": "登录成功后的回调地址（OAuth 2.0 redirect_uri）",
+            "example": "http://localhost:3012/sp/app-a/callback"
+          },
+          "logoutCallbackUrl": {
+            "type": "string",
+            "description": "单点登出（SLO）广播通知回调地址",
+            "example": "http://localhost:3012/sp/app-a/slo"
+          },
+          "redirectUris": {
+            "type": "string",
+            "description": "OAuth 2.0 多回调地址列表（JSON 数组，优先于 redirectUri）",
+            "example": "[\"http://localhost:3012/callback\",\"http://localhost:3012/callback2\"]"
+          },
+          "grantTypes": {
+            "type": "string",
+            "description": "OAuth 2.0 允许的 grant_types（JSON 数组）",
+            "example": "[\"authorization_code\",\"refresh_token\"]"
+          },
+          "scopes": {
+            "type": "string",
+            "description": "OAuth 2.0 允许的 scopes（JSON 数组）",
+            "example": "[\"openid\",\"profile\",\"email\"]"
+          },
+          "applicationType": {
+            "type": "string",
+            "description": "应用类型：web 或 native",
+            "example": "web",
+            "default": "web"
+          },
+          "tokenEndpointAuthMethod": {
+            "type": "string",
+            "description": "Token 端点认证方式",
+            "example": "client_secret_post",
+            "default": "client_secret_post"
+          },
+          "postLogoutRedirectUris": {
+            "type": "string",
+            "description": "OIDC RP-Initiated Logout 允许的回调地址（JSON 数组）",
+            "example": "[\"http://localhost:3012/\"]"
+          },
+          "logoUrl": {
+            "type": "string",
+            "description": "应用 Logo URL（展示在登录页左上角），为空则使用默认图标",
+            "example": "https://myapp.com/logo.png"
+          },
+          "primaryColor": {
+            "type": "string",
+            "description": "品牌主色（Hex），如 #2563EB。为空则使用默认蓝色",
+            "example": "#1a73e8"
+          }
+        },
+        "required": [
+          "name",
+          "redirectUri"
+        ]
+      },
+      "CreateEnterpriseDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "企业名称",
+            "example": "腾讯科技有限公司"
+          },
+          "slug": {
+            "type": "string",
+            "description": "URL 友好标识（字母、数字、短横线），如 tencent",
+            "example": "tencent"
+          }
+        },
+        "required": [
+          "name",
+          "slug"
+        ]
+      },
+      "UpdateEnterpriseDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "企业名称",
+            "example": "腾讯科技有限公司"
+          },
+          "slug": {
+            "type": "string",
+            "description": "URL 友好标识",
+            "example": "tencent"
+          },
+          "status": {
+            "type": "string",
+            "description": "企业状态：active / disabled",
+            "example": "disabled"
+          }
+        }
+      },
+      "AdminLoginDto": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "example": "admin",
+            "description": "管理员用户名"
+          },
+          "password": {
+            "type": "string",
+            "example": "Admin@123",
+            "description": "管理员密码"
+          }
+        },
+        "required": [
+          "username",
+          "password"
+        ]
+      },
+      "AdminCreateUserDto": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "example": "zhangsan",
+            "description": "用户名"
+          },
+          "password": {
+            "type": "string",
+            "example": "Str0ng@Pass",
+            "description": "密码"
+          },
+          "email": {
+            "type": "string",
+            "example": "zhangsan@example.com",
+            "description": "邮箱"
+          },
+          "roles": {
+            "type": "string",
+            "example": "enterprise_admin",
+            "description": "角色：enterprise_admin / user",
+            "default": "user"
+          }
+        },
+        "required": [
+          "username",
+          "password"
+        ]
+      },
+      "AdminUpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "zhangsan@example.com",
+            "description": "邮箱"
+          },
+          "status": {
+            "type": "string",
+            "example": "active",
+            "description": "状态：active / disabled"
+          },
+          "roles": {
+            "type": "string",
+            "example": "enterprise_admin",
+            "description": "角色"
+          }
+        }
+      }
+    }
+  }
+}

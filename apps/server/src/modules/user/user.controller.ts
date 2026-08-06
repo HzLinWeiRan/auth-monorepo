@@ -48,7 +48,6 @@ export class UserController {
         id: user.id,
         username: user.username,
         email: user.email,
-        status: user.status,
       },
       '注册成功',
       201,
@@ -74,7 +73,6 @@ export class UserController {
       id: full.id,
       username: full.username,
       email: full.email,
-      status: full.status,
       createdAt: full.createdAt,
     });
   }

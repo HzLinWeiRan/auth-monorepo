@@ -35,9 +35,13 @@ export class User {
   @Column({ nullable: true, length: 128 })
   email: string;
 
-  /** 账号状态：active 正常 / disabled 禁用 */
-  @Column({ type: 'varchar', length: 16, default: 'active' })
-  status: string;
+  /** 软删除标记：true 表示已删除，查询时排除 */
+  @Column({ name: 'is_deleted', type: 'boolean', default: false })
+  isDeleted: boolean;
+
+  /** 启用标记：true 表示正常启用，false 表示已禁用，无法登录 */
+  @Column({ name: 'is_enabled', type: 'boolean', default: true })
+  isEnabled: boolean;
 
   /** 所属企业 ID（null 表示平台级账号，如超级管理员） */
   @Index()

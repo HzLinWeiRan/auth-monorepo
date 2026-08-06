@@ -17,6 +17,7 @@
     "build:server": "npm run build -w apps/server",
     "build:admin": "npm run build -w apps/admin-web",
     "build:shared": "npm run build -w packages/shared",
+    "generate:api": "openapi-ts",
     "start:server": "npm run start:prod -w apps/server",
     "start:admin": "npm run start -w apps/admin-web",
     "lint": "npm run lint --workspaces --if-present",
@@ -30,6 +31,7 @@
     "clean": "npm run clean --workspaces --if-present && rm -rf node_modules"
   },
   "devDependencies": {
+    "@hey-api/openapi-ts": "^0.99.0",
     "prettier": "^3.3.0",
     "typescript": "^5.5.0"
   },

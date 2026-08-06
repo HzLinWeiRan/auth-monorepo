@@ -1,3 +1,5 @@
+import * as fs from 'fs';
+import * as path from 'path';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger, RequestMethod } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -17,6 +19,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
  */
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const logger = new Logger('Bootstrap');
 
   const configService = app.get(ConfigService);
   const apiPrefix = configService.get<string>('apiPrefix') || 'api/v1';
@@ -83,10 +86,15 @@ async function bootstrap(): Promise<void> {
     swaggerOptions: { persistAuthorization: true },
   });
 
+  // 导出 OpenAPI spec 为 JSON，供 @hey-api/openapi-ts 生成类型安全 SDK
+  const openapiOutputPath = path.resolve(__dirname, '../../../packages/shared/openapi.json');
+  fs.mkdirSync(path.dirname(openapiOutputPath), { recursive: true });
+  fs.writeFileSync(openapiOutputPath, JSON.stringify(document, null, 2));
+  logger.log(`OpenAPI spec 已导出: ${openapiOutputPath}`);
+
   const port = configService.get<number>('port') || 3000;
   await app.listen(port);
 
-  const logger = new Logger('Bootstrap');
   logger.log(`SSO 认证中心已启动: http://localhost:${port}`);
   logger.log(`接口文档(Swagger): http://localhost:${port}/docs`);
   logger.log(`API 前缀: /${apiPrefix}`);

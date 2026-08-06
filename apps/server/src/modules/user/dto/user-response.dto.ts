@@ -22,10 +22,16 @@ export class UserDataDto {
   email: string | null;
 
   @ApiProperty({
-    description: '账号状态：active 正常 / disabled 禁用',
-    example: 'active',
+    description: '是否已软删除',
+    example: false,
   })
-  status: string;
+  isDeleted: boolean;
+
+  @ApiProperty({
+    description: '是否已启用',
+    example: true,
+  })
+  isEnabled: boolean;
 }
 
 /**

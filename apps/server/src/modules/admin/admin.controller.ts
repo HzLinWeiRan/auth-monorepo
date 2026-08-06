@@ -21,6 +21,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { Role } from '../../common/enums/role.enum';
 import { CreateAppDto } from '../app/dto/create-app.dto';
+import { UpdateAppDto } from '../app/dto/update-app.dto';
 
 /**
  * 管理后台 API：超级管理员与企业管理员共用。
@@ -36,7 +37,7 @@ export class AdminController {
 
   @Public()
   @Post('login')
-  @ApiOperation({ summary: '管理后台登录' })
+  @ApiOperation({ operationId: 'adminLogin', summary: '管理后台登录' })
   @ApiResponse({ status: 200, description: '登录成功，返回 accessToken 与用户信息' })
   @ApiResponse({ status: 401, description: '用户名或密码错误' })
   @ApiResponse({ status: 403, description: '无管理后台权限' })
@@ -47,7 +48,7 @@ export class AdminController {
   // ==================== 通用端点 ====================
 
   @Get('me')
-  @ApiOperation({ summary: '获取当前管理员信息' })
+  @ApiOperation({ operationId: 'getAdminMe', summary: '获取当前管理员信息' })
   @ApiResponse({ status: 200, description: '当前管理员信息' })
   getMe(@Req() req: Request) {
     return this.adminService.getMe(req.user as any);
@@ -57,7 +58,7 @@ export class AdminController {
 
   @Get('overview')
   @Roles(Role.SUPER_ADMIN)
-  @ApiOperation({ summary: '系统概览统计（超级管理员）' })
+  @ApiOperation({ operationId: 'getAdminOverview', summary: '系统概览统计（超级管理员）' })
   @ApiResponse({ status: 200, description: '概览统计信息' })
   overview() {
     return this.adminService.overview();
@@ -65,21 +66,23 @@ export class AdminController {
 
   @Get('enterprises/:id/users')
   @Roles(Role.SUPER_ADMIN)
-  @ApiOperation({ summary: '企业下用户列表（超级管理员）' })
+  @ApiOperation({ operationId: 'getEnterpriseUsersBySuperAdmin', summary: '企业下用户列表（超级管理员）' })
   @ApiQuery({ name: 'page', required: false, description: '页码' })
   @ApiQuery({ name: 'pageSize', required: false, description: '每页数量' })
+  @ApiQuery({ name: 'search', required: false, description: '搜索关键词' })
   @ApiResponse({ status: 200, description: '用户列表' })
   getEnterpriseUsersBySuperAdmin(
     @Param('id') enterpriseId: string,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('pageSize', new DefaultValuePipe(20), ParseIntPipe) pageSize: number,
+    @Query('search') search?: string,
   ) {
-    return this.adminService.getEnterpriseUsers(enterpriseId, page, pageSize);
+    return this.adminService.getEnterpriseUsers(enterpriseId, page, pageSize, search);
   }
 
   @Get('enterprises/:id/apps')
   @Roles(Role.SUPER_ADMIN)
-  @ApiOperation({ summary: '企业下应用列表（超级管理员）' })
+  @ApiOperation({ operationId: 'getEnterpriseAppsBySuperAdmin', summary: '企业下应用列表（超级管理员）' })
   @ApiResponse({ status: 200, description: '应用列表' })
   getEnterpriseAppsBySuperAdmin(@Param('id') enterpriseId: string) {
     return this.adminService.getEnterpriseApps(enterpriseId);
@@ -89,22 +92,24 @@ export class AdminController {
 
   @Get('enterprise/users')
   @Roles(Role.ENTERPRISE_ADMIN)
-  @ApiOperation({ summary: '本企业用户列表（企业管理员）' })
+  @ApiOperation({ operationId: 'getEnterpriseUsers', summary: '本企业用户列表（企业管理员）' })
   @ApiQuery({ name: 'page', required: false, description: '页码' })
   @ApiQuery({ name: 'pageSize', required: false, description: '每页数量' })
+  @ApiQuery({ name: 'search', required: false, description: '搜索关键词' })
   @ApiResponse({ status: 200, description: '用户列表' })
   getMyEnterpriseUsers(
     @Req() req: Request,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('pageSize', new DefaultValuePipe(20), ParseIntPipe) pageSize: number,
+    @Query('search') search?: string,
   ) {
     const user = req.user as any;
-    return this.adminService.getEnterpriseUsers(user.enterpriseId, page, pageSize);
+    return this.adminService.getEnterpriseUsers(user.enterpriseId, page, pageSize, search);
   }
 
   @Post('enterprise/users')
   @Roles(Role.ENTERPRISE_ADMIN)
-  @ApiOperation({ summary: '创建本企业用户（企业管理员）' })
+  @ApiOperation({ operationId: 'createEnterpriseUser', summary: '创建本企业用户（企业管理员）' })
   @ApiResponse({ status: 201, description: '用户创建成功' })
   @ApiResponse({ status: 409, description: '该企业内用户名已存在' })
   createEnterpriseUser(
@@ -117,7 +122,7 @@ export class AdminController {
 
   @Patch('enterprise/users/:id')
   @Roles(Role.ENTERPRISE_ADMIN)
-  @ApiOperation({ summary: '更新用户（企业管理员）' })
+  @ApiOperation({ operationId: 'updateEnterpriseUser', summary: '更新用户（企业管理员）' })
   @ApiResponse({ status: 200, description: '更新成功' })
   updateUser(
     @Param('id') userId: string,
@@ -128,7 +133,7 @@ export class AdminController {
 
   @Delete('enterprise/users/:id')
   @Roles(Role.ENTERPRISE_ADMIN)
-  @ApiOperation({ summary: '删除用户（企业管理员，软删除）' })
+  @ApiOperation({ operationId: 'deleteEnterpriseUser', summary: '删除用户（企业管理员，软删除）' })
   @ApiResponse({ status: 200, description: '删除成功' })
   removeUser(@Param('id') userId: string) {
     return this.adminService.removeUser(userId);
@@ -136,16 +141,20 @@ export class AdminController {
 
   @Get('enterprise/apps')
   @Roles(Role.ENTERPRISE_ADMIN)
-  @ApiOperation({ summary: '本企业应用列表（企业管理员）' })
+  @ApiOperation({ operationId: 'getEnterpriseApps', summary: '本企业应用列表（企业管理员）' })
+  @ApiQuery({ name: 'search', required: false, description: '搜索关键词' })
   @ApiResponse({ status: 200, description: '应用列表' })
-  getMyEnterpriseApps(@Req() req: Request) {
+  getMyEnterpriseApps(
+    @Req() req: Request,
+    @Query('search') search?: string,
+  ) {
     const user = req.user as any;
-    return this.adminService.getEnterpriseApps(user.enterpriseId);
+    return this.adminService.getEnterpriseApps(user.enterpriseId, search);
   }
 
   @Post('enterprise/apps')
   @Roles(Role.ENTERPRISE_ADMIN)
-  @ApiOperation({ summary: '创建本企业应用（企业管理员）' })
+  @ApiOperation({ operationId: 'createEnterpriseApp', summary: '创建本企业应用（企业管理员）' })
   @ApiResponse({ status: 201, description: '应用创建成功' })
   createEnterpriseApp(
     @Req() req: Request,
@@ -157,9 +166,20 @@ export class AdminController {
 
   @Delete('enterprise/apps/:appId')
   @Roles(Role.ENTERPRISE_ADMIN)
-  @ApiOperation({ summary: '删除应用（企业管理员）' })
+  @ApiOperation({ operationId: 'deleteEnterpriseApp', summary: '删除应用（企业管理员）' })
   @ApiResponse({ status: 200, description: '删除成功' })
   removeApp(@Param('appId') appId: string) {
     return this.adminService.removeApp(appId);
+  }
+
+  @Patch('enterprise/apps/:appId')
+  @Roles(Role.ENTERPRISE_ADMIN)
+  @ApiOperation({ operationId: 'updateEnterpriseApp', summary: '更新应用（企业管理员）' })
+  @ApiResponse({ status: 200, description: '更新成功' })
+  updateEnterpriseApp(
+    @Param('appId') appId: string,
+    @Body() dto: UpdateAppDto,
+  ) {
+    return this.adminService.updateEnterpriseApp(appId, dto);
   }
 }

@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { User } from './user.entity';
 import { RegisterDto } from './dto/register.dto';
@@ -68,14 +68,20 @@ export class UserService {
     return user;
   }
 
-  /** 分页获取企业内用户列表 */
+  /** 分页获取企业内用户列表（排除软删除，支持搜索） */
   async findByEnterpriseId(
     enterpriseId: string,
     page = 1,
     pageSize = 20,
+    search?: string,
   ): Promise<{ items: User[]; total: number }> {
     const [items, total] = await this.userRepo.findAndCount({
-      where: { enterpriseId },
+      where: search
+        ? [
+            { enterpriseId, isDeleted: false, username: Like(`%${search}%`) },
+            { enterpriseId, isDeleted: false, email: Like(`%${search}%`) },
+          ]
+        : { enterpriseId, isDeleted: false },
       order: { createdAt: 'DESC' },
       skip: (page - 1) * pageSize,
       take: pageSize,
@@ -109,33 +115,33 @@ export class UserService {
   /** 更新用户信息 */
   async updateUser(
     id: string,
-    updates: { email?: string; status?: string; roles?: string },
+    updates: { email?: string; isEnabled?: boolean; roles?: string },
   ): Promise<User> {
     const user = await this.findById(id);
     Object.assign(user, updates);
     return this.userRepo.save(user);
   }
 
-  /** 删除用户 */
+  /** 软删除用户：标记 isDeleted = true */
   async removeUser(id: string): Promise<void> {
     const user = await this.findById(id);
-    user.status = 'disabled';
+    user.isDeleted = true;
     await this.userRepo.save(user);
   }
 
-  /** 统计企业内用户数 */
+  /** 统计企业内用户数（排除软删除） */
   async countByEnterpriseId(enterpriseId: string): Promise<number> {
-    return this.userRepo.count({ where: { enterpriseId } });
+    return this.userRepo.count({ where: { enterpriseId, isDeleted: false } });
   }
 
-  /** 统计所有用户数（全局） */
+  /** 统计所有用户数（全局，排除软删除） */
   async countAll(): Promise<number> {
-    return this.userRepo.count();
+    return this.userRepo.count({ where: { isDeleted: false } });
   }
 
-  /** 校验明文密码与哈希是否匹配 */
+  /** 校验明文密码与哈希是否匹配（禁用用户无法登录） */
   async validatePassword(user: User, plain: string): Promise<boolean> {
-    if (user.status === 'disabled') {
+    if (!user.isEnabled) {
       return false;
     }
     return bcrypt.compare(plain, user.passwordHash);

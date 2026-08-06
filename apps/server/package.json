@@ -9,7 +9,7 @@
     "build": "rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json && npm run copy:assets",
     "copy:assets": "cp -r src/modules/demo-sp/views dist/modules/demo-sp/views 2>/dev/null || true",
     "start": "nest start",
-    "dev": "nest start --watch",
+    "dev": "rm -f tsconfig.build.tsbuildinfo && nest start --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,test}/**/*.ts\" --fix",
     "test": "jest",

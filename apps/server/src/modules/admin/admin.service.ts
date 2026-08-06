@@ -64,8 +64,9 @@ export class AdminService {
     enterpriseId: string,
     page = 1,
     pageSize = 20,
+    search?: string,
   ) {
-    return this.users.findByEnterpriseId(enterpriseId, page, pageSize);
+    return this.users.findByEnterpriseId(enterpriseId, page, pageSize, search);
   }
 
   /** 企业管理员：创建本企业用户 */
@@ -88,13 +89,18 @@ export class AdminService {
   }
 
   /** 企业管理员：获取本企业应用列表 */
-  async getEnterpriseApps(enterpriseId: string) {
-    return this.apps.findByEnterpriseId(enterpriseId);
+  async getEnterpriseApps(enterpriseId: string, search?: string) {
+    return this.apps.findByEnterpriseId(enterpriseId, search);
   }
 
   /** 企业管理员：创建本企业应用 */
   async createEnterpriseApp(enterpriseId: string, dto: any) {
     return this.apps.create(dto, enterpriseId);
+  }
+
+  /** 企业管理员：更新应用 */
+  async updateEnterpriseApp(appId: string, dto: any) {
+    return this.apps.update(appId, dto);
   }
 
   /** 企业管理员：删除应用 */
