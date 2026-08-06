@@ -90,9 +90,24 @@ export class AdminController {
 
   // ==================== 企业管理员端点 ====================
 
-  @Get('enterprise/users')
+  @Get('enterprise/activity')
   @Roles(Role.ENTERPRISE_ADMIN)
-  @ApiOperation({ operationId: 'getEnterpriseUsers', summary: '本企业用户列表（企业管理员）' })
+  @ApiOperation({ operationId: 'getEnterpriseActivity', summary: '本企业登录活动记录（企业管理员）' })
+  @ApiQuery({ name: 'page', required: false, description: '页码' })
+  @ApiQuery({ name: 'pageSize', required: false, description: '每页数量' })
+  @ApiResponse({ status: 200, description: '活动记录列表' })
+  getEnterpriseActivity(
+    @Req() req: Request,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('pageSize', new DefaultValuePipe(20), ParseIntPipe) pageSize: number,
+  ) {
+    const user = req.user as any;
+    return this.adminService.getEnterpriseActivity(user.enterpriseId, page, pageSize);
+  }
+
+  @Get('enterprise/users')
+  @Roles(Role.SUPER_ADMIN)
+  @ApiOperation({ operationId: 'getEnterpriseUsers', summary: '本企业用户列表（超级管理员）' })
   @ApiQuery({ name: 'page', required: false, description: '页码' })
   @ApiQuery({ name: 'pageSize', required: false, description: '每页数量' })
   @ApiQuery({ name: 'search', required: false, description: '搜索关键词' })
@@ -108,8 +123,8 @@ export class AdminController {
   }
 
   @Post('enterprise/users')
-  @Roles(Role.ENTERPRISE_ADMIN)
-  @ApiOperation({ operationId: 'createEnterpriseUser', summary: '创建本企业用户（企业管理员）' })
+  @Roles(Role.SUPER_ADMIN)
+  @ApiOperation({ operationId: 'createEnterpriseUser', summary: '创建本企业用户（超级管理员）' })
   @ApiResponse({ status: 201, description: '用户创建成功' })
   @ApiResponse({ status: 409, description: '该企业内用户名已存在' })
   createEnterpriseUser(
@@ -121,8 +136,8 @@ export class AdminController {
   }
 
   @Patch('enterprise/users/:id')
-  @Roles(Role.ENTERPRISE_ADMIN)
-  @ApiOperation({ operationId: 'updateEnterpriseUser', summary: '更新用户（企业管理员）' })
+  @Roles(Role.SUPER_ADMIN)
+  @ApiOperation({ operationId: 'updateEnterpriseUser', summary: '更新用户（超级管理员）' })
   @ApiResponse({ status: 200, description: '更新成功' })
   updateUser(
     @Param('id') userId: string,
@@ -132,8 +147,8 @@ export class AdminController {
   }
 
   @Delete('enterprise/users/:id')
-  @Roles(Role.ENTERPRISE_ADMIN)
-  @ApiOperation({ operationId: 'deleteEnterpriseUser', summary: '删除用户（企业管理员，软删除）' })
+  @Roles(Role.SUPER_ADMIN)
+  @ApiOperation({ operationId: 'deleteEnterpriseUser', summary: '删除用户（超级管理员，软删除）' })
   @ApiResponse({ status: 200, description: '删除成功' })
   removeUser(@Param('id') userId: string) {
     return this.adminService.removeUser(userId);

@@ -13,6 +13,8 @@ import { createHash } from 'crypto';
 import { UserService } from '../user/user.service';
 import { User } from '../user/user.entity';
 import { App } from '../app/app.entity';
+import { LoginActivity } from './login-activity.entity';
+import { Enterprise } from '../enterprise/enterprise.entity';
 import { SessionService } from './session.service';
 import { KeyService } from './key.service';
 import { AuthorizationCodeService } from './authorization-code.service';
@@ -59,6 +61,10 @@ export class AuthService {
     private readonly config: ConfigService,
     @InjectRepository(App)
     private readonly appRepo: Repository<App>,
+    @InjectRepository(LoginActivity)
+    private readonly loginActivityRepo: Repository<LoginActivity>,
+    @InjectRepository(Enterprise)
+    private readonly enterpriseRepo: Repository<Enterprise>,
   ) {}
 
   private get sessionTtl(): number {
@@ -174,6 +180,21 @@ export class AuthService {
     if (!ok) {
       throw new UnauthorizedException('用户名或密码错误');
     }
+
+    // 记录登录活动（仅 OAuth 登录，即通过 clientId 关联到企业）
+    if ((dto as any).clientId) {
+      const clientId = (dto as any).clientId;
+      const app = await this.appRepo.findOne({ where: { appId: clientId } });
+      const activity = this.loginActivityRepo.create({
+        userId: user.id,
+        username: user.username,
+        enterpriseId: app?.enterpriseId || user.enterpriseId,
+        appId: clientId,
+        appName: app?.name || null,
+      });
+      await this.loginActivityRepo.save(activity);
+    }
+
     const session = await this.sessions.create(user.id, this.sessionTtl);
     const tokens = await this.issueTokens(user, session.sessionId);
     return { sessionId: session.sessionId, ...tokens, user: this.toPublicUser(user) };
@@ -705,5 +726,34 @@ export class AuthService {
       } catch { /* fall through */ }
     }
     return ['openid', 'profile', 'email'];
+  }
+
+  /** 企业注册：同时创建企业 + 企业管理员用户 */
+  async registerEnterprise(dto: {
+    username: string;
+    password: string;
+    email?: string;
+    enterpriseName: string;
+    enterpriseSlug: string;
+  }): Promise<{ user: PublicUser; enterprise: Enterprise }> {
+    // 创建企业
+    const enterprise = this.enterpriseRepo.create({
+      name: dto.enterpriseName,
+      slug: dto.enterpriseSlug,
+    });
+    await this.enterpriseRepo.save(enterprise);
+
+    // 创建企业管理员用户
+    const user = await this.users.register(
+      {
+        username: dto.username,
+        password: dto.password,
+        email: dto.email,
+      },
+      enterprise.id,
+      'enterprise_admin',
+    );
+
+    return { user: this.toPublicUser(user), enterprise };
   }
 }

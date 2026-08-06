@@ -2,7 +2,7 @@
 
 import type { Client, ClientMeta, Options as Options2, RequestResult, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AdminLoginData, AdminLoginErrors, AdminLoginResponses, AppControllerCreateData, AppControllerCreateErrors, AppControllerCreateResponses, AppControllerDetailData, AppControllerDetailErrors, AppControllerDetailResponses, AppControllerHealthData, AppControllerHealthResponses, AppControllerListData, AppControllerListResponses, AppControllerRemoveData, AppControllerRemoveErrors, AppControllerRemoveResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthSessionPingData, AuthSessionPingResponses, AuthValidateData, AuthValidateResponses, CreateEnterpriseAppData, CreateEnterpriseAppResponses, CreateEnterpriseData, CreateEnterpriseErrors, CreateEnterpriseResponses, CreateEnterpriseUserData, CreateEnterpriseUserErrors, CreateEnterpriseUserResponses, DeleteEnterpriseAppData, DeleteEnterpriseAppResponses, DeleteEnterpriseData, DeleteEnterpriseErrors, DeleteEnterpriseResponses, DeleteEnterpriseUserData, DeleteEnterpriseUserResponses, DemoSpControllerCallbackData, DemoSpControllerHomeData, DemoSpControllerHomeResponses, DemoSpControllerLogoutData, DemoSpControllerSloData, DemoSpControllerSloResponses, DiscoveryControllerGetConfigurationData, DiscoveryControllerGetConfigurationResponses, GetAdminMeData, GetAdminMeResponses, GetAdminOverviewData, GetAdminOverviewResponses, GetEnterpriseAppsBySuperAdminData, GetEnterpriseAppsBySuperAdminResponses, GetEnterpriseAppsData, GetEnterpriseAppsResponses, GetEnterpriseByIdData, GetEnterpriseByIdErrors, GetEnterpriseByIdResponses, GetEnterprisesData, GetEnterprisesResponses, GetEnterpriseUsersBySuperAdminData, GetEnterpriseUsersBySuperAdminResponses, GetEnterpriseUsersData, GetEnterpriseUsersResponses, JwksControllerGetJwksData, JwksControllerGetJwksResponses, OAuthControllerAuthorizeData, OAuthControllerAuthorizeErrors, OAuthControllerEndSessionData, OAuthControllerEndSessionErrors, OAuthControllerLoginPageData, OAuthControllerLoginPageResponses, OAuthControllerLoginSubmitData, OAuthControllerLoginSubmitErrors, TokenControllerIntrospectData, TokenControllerIntrospectResponses, TokenControllerRevokeData, TokenControllerRevokeResponses, TokenControllerTokenData, TokenControllerTokenErrors, TokenControllerTokenResponses, TokenControllerUserinfoData, TokenControllerUserinfoErrors, TokenControllerUserinfoResponses, UpdateEnterpriseAppData, UpdateEnterpriseAppResponses, UpdateEnterpriseData, UpdateEnterpriseErrors, UpdateEnterpriseResponses, UpdateEnterpriseUserData, UpdateEnterpriseUserResponses, UserControllerProfileData, UserControllerProfileErrors, UserControllerProfileResponses, UserControllerRegisterData, UserControllerRegisterErrors, UserControllerRegisterResponses } from './types.gen';
+import type { AdminLoginData, AdminLoginErrors, AdminLoginResponses, AppControllerCreateData, AppControllerCreateErrors, AppControllerCreateResponses, AppControllerDetailData, AppControllerDetailErrors, AppControllerDetailResponses, AppControllerHealthData, AppControllerHealthResponses, AppControllerListData, AppControllerListResponses, AppControllerRemoveData, AppControllerRemoveErrors, AppControllerRemoveResponses, AuthLoginData, AuthLoginErrors, AuthLoginResponses, AuthRegisterData, AuthRegisterEnterpriseData, AuthRegisterEnterpriseErrors, AuthRegisterEnterpriseResponses, AuthRegisterErrors, AuthRegisterResponses, AuthSessionPingData, AuthSessionPingResponses, AuthValidateData, AuthValidateResponses, CreateEnterpriseAppData, CreateEnterpriseAppResponses, CreateEnterpriseData, CreateEnterpriseErrors, CreateEnterpriseResponses, CreateEnterpriseUserData, CreateEnterpriseUserErrors, CreateEnterpriseUserResponses, DeleteEnterpriseAppData, DeleteEnterpriseAppResponses, DeleteEnterpriseData, DeleteEnterpriseErrors, DeleteEnterpriseResponses, DeleteEnterpriseUserData, DeleteEnterpriseUserResponses, DemoSpControllerCallbackData, DemoSpControllerHomeData, DemoSpControllerHomeResponses, DemoSpControllerLogoutData, DemoSpControllerSloData, DemoSpControllerSloResponses, DiscoveryControllerGetConfigurationData, DiscoveryControllerGetConfigurationResponses, GetAdminMeData, GetAdminMeResponses, GetAdminOverviewData, GetAdminOverviewResponses, GetEnterpriseActivityData, GetEnterpriseActivityResponses, GetEnterpriseAppsBySuperAdminData, GetEnterpriseAppsBySuperAdminResponses, GetEnterpriseAppsData, GetEnterpriseAppsResponses, GetEnterpriseByIdData, GetEnterpriseByIdErrors, GetEnterpriseByIdResponses, GetEnterprisesData, GetEnterprisesResponses, GetEnterpriseUsersBySuperAdminData, GetEnterpriseUsersBySuperAdminResponses, GetEnterpriseUsersData, GetEnterpriseUsersResponses, JwksControllerGetJwksData, JwksControllerGetJwksResponses, OAuthControllerAuthorizeData, OAuthControllerAuthorizeErrors, OAuthControllerEndSessionData, OAuthControllerEndSessionErrors, OAuthControllerLoginPageData, OAuthControllerLoginPageResponses, OAuthControllerLoginSubmitData, OAuthControllerLoginSubmitErrors, TokenControllerIntrospectData, TokenControllerIntrospectResponses, TokenControllerRevokeData, TokenControllerRevokeResponses, TokenControllerTokenData, TokenControllerTokenErrors, TokenControllerTokenResponses, TokenControllerUserinfoData, TokenControllerUserinfoErrors, TokenControllerUserinfoResponses, UpdateEnterpriseAppData, UpdateEnterpriseAppResponses, UpdateEnterpriseData, UpdateEnterpriseErrors, UpdateEnterpriseResponses, UpdateEnterpriseUserData, UpdateEnterpriseUserResponses, UserControllerProfileData, UserControllerProfileErrors, UserControllerProfileResponses, UserControllerRegisterData, UserControllerRegisterErrors, UserControllerRegisterResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
@@ -55,6 +55,34 @@ export class Users {
 }
 
 export class Auth {
+    /**
+     * 注册新用户
+     */
+    public static authRegister<ThrowOnError extends boolean = false>(options: Options<AuthRegisterData, ThrowOnError>): RequestResult<AuthRegisterResponses, AuthRegisterErrors, ThrowOnError> {
+        return (options.client ?? client).post<AuthRegisterResponses, AuthRegisterErrors, ThrowOnError>({
+            url: '/api/v1/auth/register',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * 企业注册：同时创建企业 + 管理员账号
+     */
+    public static authRegisterEnterprise<ThrowOnError extends boolean = false>(options: Options<AuthRegisterEnterpriseData, ThrowOnError>): RequestResult<AuthRegisterEnterpriseResponses, AuthRegisterEnterpriseErrors, ThrowOnError> {
+        return (options.client ?? client).post<AuthRegisterEnterpriseResponses, AuthRegisterEnterpriseErrors, ThrowOnError>({
+            url: '/api/v1/auth/register-enterprise',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
     /**
      * 账号密码登录，签发双 Token 并建立全局会话
      */
@@ -206,6 +234,57 @@ export class Oidc {
     }
 }
 
+export class Enterprises {
+    /**
+     * 企业列表（超级管理员）
+     */
+    public static getEnterprises<ThrowOnError extends boolean = false>(options?: Options<GetEnterprisesData, ThrowOnError>): RequestResult<GetEnterprisesResponses, unknown, ThrowOnError> {
+        return (options?.client ?? client).get<GetEnterprisesResponses, unknown, ThrowOnError>({ url: '/api/v1/enterprises', ...options });
+    }
+    
+    /**
+     * 创建企业（超级管理员）
+     */
+    public static createEnterprise<ThrowOnError extends boolean = false>(options: Options<CreateEnterpriseData, ThrowOnError>): RequestResult<CreateEnterpriseResponses, CreateEnterpriseErrors, ThrowOnError> {
+        return (options.client ?? client).post<CreateEnterpriseResponses, CreateEnterpriseErrors, ThrowOnError>({
+            url: '/api/v1/enterprises',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+    
+    /**
+     * 软删除企业（超级管理员）
+     */
+    public static deleteEnterprise<ThrowOnError extends boolean = false>(options: Options<DeleteEnterpriseData, ThrowOnError>): RequestResult<DeleteEnterpriseResponses, DeleteEnterpriseErrors, ThrowOnError> {
+        return (options.client ?? client).delete<DeleteEnterpriseResponses, DeleteEnterpriseErrors, ThrowOnError>({ url: '/api/v1/enterprises/{id}', ...options });
+    }
+    
+    /**
+     * 企业详情（超级管理员）
+     */
+    public static getEnterpriseById<ThrowOnError extends boolean = false>(options: Options<GetEnterpriseByIdData, ThrowOnError>): RequestResult<GetEnterpriseByIdResponses, GetEnterpriseByIdErrors, ThrowOnError> {
+        return (options.client ?? client).get<GetEnterpriseByIdResponses, GetEnterpriseByIdErrors, ThrowOnError>({ url: '/api/v1/enterprises/{id}', ...options });
+    }
+    
+    /**
+     * 更新企业（超级管理员）
+     */
+    public static updateEnterprise<ThrowOnError extends boolean = false>(options: Options<UpdateEnterpriseData, ThrowOnError>): RequestResult<UpdateEnterpriseResponses, UpdateEnterpriseErrors, ThrowOnError> {
+        return (options.client ?? client).patch<UpdateEnterpriseResponses, UpdateEnterpriseErrors, ThrowOnError>({
+            url: '/api/v1/enterprises/{id}',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+}
+
 export class Apps {
     /**
      * 查询已注册的应用列表（不含 secret 和 privateKey，含 publicKey）
@@ -286,57 +365,6 @@ export class SpDemo {
     }
 }
 
-export class Enterprises {
-    /**
-     * 企业列表（超级管理员）
-     */
-    public static getEnterprises<ThrowOnError extends boolean = false>(options?: Options<GetEnterprisesData, ThrowOnError>): RequestResult<GetEnterprisesResponses, unknown, ThrowOnError> {
-        return (options?.client ?? client).get<GetEnterprisesResponses, unknown, ThrowOnError>({ url: '/api/v1/enterprises', ...options });
-    }
-    
-    /**
-     * 创建企业（超级管理员）
-     */
-    public static createEnterprise<ThrowOnError extends boolean = false>(options: Options<CreateEnterpriseData, ThrowOnError>): RequestResult<CreateEnterpriseResponses, CreateEnterpriseErrors, ThrowOnError> {
-        return (options.client ?? client).post<CreateEnterpriseResponses, CreateEnterpriseErrors, ThrowOnError>({
-            url: '/api/v1/enterprises',
-            ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers
-            }
-        });
-    }
-    
-    /**
-     * 软删除企业（超级管理员）
-     */
-    public static deleteEnterprise<ThrowOnError extends boolean = false>(options: Options<DeleteEnterpriseData, ThrowOnError>): RequestResult<DeleteEnterpriseResponses, DeleteEnterpriseErrors, ThrowOnError> {
-        return (options.client ?? client).delete<DeleteEnterpriseResponses, DeleteEnterpriseErrors, ThrowOnError>({ url: '/api/v1/enterprises/{id}', ...options });
-    }
-    
-    /**
-     * 企业详情（超级管理员）
-     */
-    public static getEnterpriseById<ThrowOnError extends boolean = false>(options: Options<GetEnterpriseByIdData, ThrowOnError>): RequestResult<GetEnterpriseByIdResponses, GetEnterpriseByIdErrors, ThrowOnError> {
-        return (options.client ?? client).get<GetEnterpriseByIdResponses, GetEnterpriseByIdErrors, ThrowOnError>({ url: '/api/v1/enterprises/{id}', ...options });
-    }
-    
-    /**
-     * 更新企业（超级管理员）
-     */
-    public static updateEnterprise<ThrowOnError extends boolean = false>(options: Options<UpdateEnterpriseData, ThrowOnError>): RequestResult<UpdateEnterpriseResponses, UpdateEnterpriseErrors, ThrowOnError> {
-        return (options.client ?? client).patch<UpdateEnterpriseResponses, UpdateEnterpriseErrors, ThrowOnError>({
-            url: '/api/v1/enterprises/{id}',
-            ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers
-            }
-        });
-    }
-}
-
 export class Admin {
     /**
      * 管理后台登录
@@ -381,14 +409,21 @@ export class Admin {
     }
     
     /**
-     * 本企业用户列表（企业管理员）
+     * 本企业登录活动记录（企业管理员）
+     */
+    public static getEnterpriseActivity<ThrowOnError extends boolean = false>(options?: Options<GetEnterpriseActivityData, ThrowOnError>): RequestResult<GetEnterpriseActivityResponses, unknown, ThrowOnError> {
+        return (options?.client ?? client).get<GetEnterpriseActivityResponses, unknown, ThrowOnError>({ url: '/api/v1/admin/enterprise/activity', ...options });
+    }
+    
+    /**
+     * 本企业用户列表（超级管理员）
      */
     public static getEnterpriseUsers<ThrowOnError extends boolean = false>(options?: Options<GetEnterpriseUsersData, ThrowOnError>): RequestResult<GetEnterpriseUsersResponses, unknown, ThrowOnError> {
         return (options?.client ?? client).get<GetEnterpriseUsersResponses, unknown, ThrowOnError>({ url: '/api/v1/admin/enterprise/users', ...options });
     }
     
     /**
-     * 创建本企业用户（企业管理员）
+     * 创建本企业用户（超级管理员）
      */
     public static createEnterpriseUser<ThrowOnError extends boolean = false>(options: Options<CreateEnterpriseUserData, ThrowOnError>): RequestResult<CreateEnterpriseUserResponses, CreateEnterpriseUserErrors, ThrowOnError> {
         return (options.client ?? client).post<CreateEnterpriseUserResponses, CreateEnterpriseUserErrors, ThrowOnError>({
@@ -402,14 +437,14 @@ export class Admin {
     }
     
     /**
-     * 删除用户（企业管理员，软删除）
+     * 删除用户（超级管理员，软删除）
      */
     public static deleteEnterpriseUser<ThrowOnError extends boolean = false>(options: Options<DeleteEnterpriseUserData, ThrowOnError>): RequestResult<DeleteEnterpriseUserResponses, unknown, ThrowOnError> {
         return (options.client ?? client).delete<DeleteEnterpriseUserResponses, unknown, ThrowOnError>({ url: '/api/v1/admin/enterprise/users/{id}', ...options });
     }
     
     /**
-     * 更新用户（企业管理员）
+     * 更新用户（超级管理员）
      */
     public static updateEnterpriseUser<ThrowOnError extends boolean = false>(options: Options<UpdateEnterpriseUserData, ThrowOnError>): RequestResult<UpdateEnterpriseUserResponses, unknown, ThrowOnError> {
         return (options.client ?? client).patch<UpdateEnterpriseUserResponses, unknown, ThrowOnError>({

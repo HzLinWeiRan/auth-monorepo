@@ -25,8 +25,16 @@ import {
 } from '@/components/ui/table';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { RoleSelect } from '@/components/ui/role-select';
 import { useUsers, useCreateUser, useUpdateUser, useDeleteUser } from '@/hooks/use-users';
+import { isSuperAdmin as currentUserIsSuperAdmin } from '@/lib/auth';
 import type { User } from '@nestjs-sso/shared';
+import { Role } from '@nestjs-sso/shared';
+
+function isSuperAdmin(user: User): boolean {
+  const roles = user.roles?.split(',').map((s) => s.trim()) || [];
+  return roles.includes(Role.SUPER_ADMIN);
+}
 
 export default function UsersPage() {
   const {
@@ -185,6 +193,9 @@ export default function UsersPage() {
                     ) : (
                       <Badge variant="secondary">已禁用</Badge>
                     )}
+                    {isSuperAdmin(item) && (
+                      <Badge variant="outline" className="ml-1 border-amber-500 text-amber-600">受保护</Badge>
+                    )}
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {new Date(item.createdAt).toLocaleString()}
@@ -194,14 +205,16 @@ export default function UsersPage() {
                       <Button variant="ghost" size="icon" onClick={() => openEdit(item)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setDeleteTarget(item)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {!isSuperAdmin(item) && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setDeleteTarget(item)}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -290,27 +303,33 @@ export default function UsersPage() {
                       id="isEnabled"
                       checked={formIsEnabled}
                       onCheckedChange={setFormIsEnabled}
+                      disabled={isSuperAdmin(editing)}
                     />
                   </div>
+                  {isSuperAdmin(editing) && (
+                    <p className="text-xs text-amber-600">超级管理员账号受保护，无法禁用</p>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="roles">角色</Label>
-                    <Input
-                      id="roles"
-                      placeholder="enterprise_admin / user"
+                    <RoleSelect
                       value={formRoles}
-                      onChange={(e) => setFormRoles(e.target.value)}
+                      onChange={setFormRoles}
+                      disabled={isSuperAdmin(editing)}
+                      showSuperAdmin={currentUserIsSuperAdmin()}
                     />
+                    {isSuperAdmin(editing) && (
+                      <p className="text-xs text-amber-600">超级管理员角色不可修改</p>
+                    )}
                   </div>
                 </>
               )}
               {!editing && (
                 <div className="space-y-2">
                   <Label htmlFor="roles">角色</Label>
-                  <Input
-                    id="roles"
-                    placeholder="user 或 enterprise_admin"
+                  <RoleSelect
                     value={formRoles}
-                    onChange={(e) => setFormRoles(e.target.value)}
+                    onChange={setFormRoles}
+                    showSuperAdmin={currentUserIsSuperAdmin()}
                   />
                 </div>
               )}

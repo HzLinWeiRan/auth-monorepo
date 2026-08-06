@@ -15,4 +15,9 @@ export const queryKeys = {
     list: (search?: string) =>
       ['admin', 'apps', 'list', search] as const,
   },
+  activity: {
+    all: ['admin', 'activity'] as const,
+    list: (params: { page: number; pageSize: number }) =>
+      ['admin', 'activity', params] as const,
+  },
 };

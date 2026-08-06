@@ -10,8 +10,14 @@ import { AuthService } from './auth.service';
 import { Public } from '../../common/decorators/public.decorator';
 import { success } from '../../common/dto/response.dto';
 import { LoginDto } from '../user/dto/login.dto';
+import { RegisterDto } from '../user/dto/register.dto';
+import { RegisterEnterpriseDto } from './dto/register-enterprise.dto';
 import { ValidateDto } from './dto/validate.dto';
 import { SessionPingDto } from './dto/session-ping.dto';
+import { UserService } from '../user/user.service';
+import { App } from '../app/app.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 /**
  * 认证 API 控制器（挂载于 /api/v1 前缀下）：
@@ -22,7 +28,54 @@ import { SessionPingDto } from './dto/session-ping.dto';
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly auth: AuthService) {}
+  constructor(
+    private readonly auth: AuthService,
+    private readonly users: UserService,
+    @InjectRepository(App)
+    private readonly appRepo: Repository<App>,
+  ) {}
+
+  @Public()
+  @Post('register')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ operationId: 'authRegister', summary: '注册新用户' })
+  @ApiResponse({ status: 201, description: '注册成功' })
+  @ApiResponse({ status: 409, description: '用户名已存在' })
+  async register(@Body() dto: RegisterDto) {
+    let enterpriseId: string | undefined;
+    if (dto.appId) {
+      const app = await this.appRepo.findOne({ where: { appId: dto.appId } });
+      if (!app) {
+        return success(null, '应用不存在', 404);
+      }
+      enterpriseId = app.enterpriseId;
+    }
+    const user = await this.users.register(dto, enterpriseId);
+    return success({
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      enterpriseId: user.enterpriseId,
+    }, '注册成功', 201);
+  }
+
+  @Public()
+  @Post('register-enterprise')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ operationId: 'authRegisterEnterprise', summary: '企业注册：同时创建企业 + 管理员账号' })
+  @ApiResponse({ status: 201, description: '注册成功' })
+  @ApiResponse({ status: 409, description: '企业标识或用户名已存在' })
+  async registerEnterprise(@Body() dto: RegisterEnterpriseDto) {
+    const result = await this.auth.registerEnterprise(dto);
+    return success({
+      user: result.user,
+      enterprise: {
+        id: result.enterprise.id,
+        name: result.enterprise.name,
+        slug: result.enterprise.slug,
+      },
+    }, '企业注册成功', 201);
+  }
 
   @Public()
   @Post('login')

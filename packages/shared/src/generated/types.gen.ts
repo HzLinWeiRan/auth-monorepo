@@ -17,6 +17,10 @@ export type RegisterDto = {
      * 邮箱
      */
     email?: string;
+    /**
+     * 应用 ID（client_id），通过应用关联到对应企业
+     */
+    appId?: string;
 };
 
 export type UserDataDto = {
@@ -124,6 +128,29 @@ export type ProfileResponseDto = {
      * 响应时间戳（ISO 8601）
      */
     timestamp: string;
+};
+
+export type RegisterEnterpriseDto = {
+    /**
+     * 管理员用户名（3-32 位）
+     */
+    username: string;
+    /**
+     * 密码（至少 6 位）
+     */
+    password: string;
+    /**
+     * 邮箱
+     */
+    email?: string;
+    /**
+     * 企业名称
+     */
+    enterpriseName: string;
+    /**
+     * 企业标识（slug，仅小写字母、数字和短横线）
+     */
+    enterpriseSlug: string;
 };
 
 export type LoginDto = {
@@ -340,6 +367,32 @@ export type UserInfoResponseDto = {
     email_verified?: boolean;
 };
 
+export type CreateEnterpriseDto = {
+    /**
+     * 企业名称
+     */
+    name: string;
+    /**
+     * URL 友好标识（字母、数字、短横线），如 tencent
+     */
+    slug: string;
+};
+
+export type UpdateEnterpriseDto = {
+    /**
+     * 企业名称
+     */
+    name?: string;
+    /**
+     * URL 友好标识
+     */
+    slug?: string;
+    /**
+     * 是否启用企业
+     */
+    isEnabled?: boolean;
+};
+
 export type CreateAppDto = {
     /**
      * 应用名称
@@ -385,32 +438,6 @@ export type CreateAppDto = {
      * 品牌主色（Hex），如 #2563EB。为空则使用默认蓝色
      */
     primaryColor?: string;
-};
-
-export type CreateEnterpriseDto = {
-    /**
-     * 企业名称
-     */
-    name: string;
-    /**
-     * URL 友好标识（字母、数字、短横线），如 tencent
-     */
-    slug: string;
-};
-
-export type UpdateEnterpriseDto = {
-    /**
-     * 企业名称
-     */
-    name?: string;
-    /**
-     * URL 友好标识
-     */
-    slug?: string;
-    /**
-     * 是否启用企业
-     */
-    isEnabled?: boolean;
 };
 
 export type AdminLoginDto = {
@@ -544,6 +571,48 @@ export type UserControllerProfileResponses = {
 };
 
 export type UserControllerProfileResponse = UserControllerProfileResponses[keyof UserControllerProfileResponses];
+
+export type AuthRegisterData = {
+    body: RegisterDto;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/register';
+};
+
+export type AuthRegisterErrors = {
+    /**
+     * 用户名已存在
+     */
+    409: unknown;
+};
+
+export type AuthRegisterResponses = {
+    /**
+     * 注册成功
+     */
+    201: unknown;
+};
+
+export type AuthRegisterEnterpriseData = {
+    body: RegisterEnterpriseDto;
+    path?: never;
+    query?: never;
+    url: '/api/v1/auth/register-enterprise';
+};
+
+export type AuthRegisterEnterpriseErrors = {
+    /**
+     * 企业标识或用户名已存在
+     */
+    409: unknown;
+};
+
+export type AuthRegisterEnterpriseResponses = {
+    /**
+     * 注册成功
+     */
+    201: unknown;
+};
 
 export type AuthLoginData = {
     body: LoginDto;
@@ -838,6 +907,127 @@ export type DiscoveryControllerGetConfigurationResponses = {
     200: unknown;
 };
 
+export type GetEnterprisesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * 页码
+         */
+        page?: number;
+        /**
+         * 每页数量
+         */
+        pageSize?: number;
+        /**
+         * 搜索关键词
+         */
+        search?: string;
+    };
+    url: '/api/v1/enterprises';
+};
+
+export type GetEnterprisesResponses = {
+    /**
+     * 企业列表
+     */
+    200: unknown;
+};
+
+export type CreateEnterpriseData = {
+    body: CreateEnterpriseDto;
+    path?: never;
+    query?: never;
+    url: '/api/v1/enterprises';
+};
+
+export type CreateEnterpriseErrors = {
+    /**
+     * 企业标识已存在
+     */
+    409: unknown;
+};
+
+export type CreateEnterpriseResponses = {
+    /**
+     * 企业创建成功
+     */
+    201: unknown;
+};
+
+export type DeleteEnterpriseData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/enterprises/{id}';
+};
+
+export type DeleteEnterpriseErrors = {
+    /**
+     * 企业不存在
+     */
+    404: unknown;
+};
+
+export type DeleteEnterpriseResponses = {
+    /**
+     * 删除成功
+     */
+    200: unknown;
+};
+
+export type GetEnterpriseByIdData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/enterprises/{id}';
+};
+
+export type GetEnterpriseByIdErrors = {
+    /**
+     * 企业不存在
+     */
+    404: unknown;
+};
+
+export type GetEnterpriseByIdResponses = {
+    /**
+     * 企业详情
+     */
+    200: unknown;
+};
+
+export type UpdateEnterpriseData = {
+    body: UpdateEnterpriseDto;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/v1/enterprises/{id}';
+};
+
+export type UpdateEnterpriseErrors = {
+    /**
+     * 企业不存在
+     */
+    404: unknown;
+    /**
+     * 企业标识已存在
+     */
+    409: unknown;
+};
+
+export type UpdateEnterpriseResponses = {
+    /**
+     * 更新成功
+     */
+    200: unknown;
+};
+
 export type AppControllerListData = {
     body?: never;
     path?: never;
@@ -976,127 +1166,6 @@ export type DemoSpControllerSloResponses = {
     200: unknown;
 };
 
-export type GetEnterprisesData = {
-    body?: never;
-    path?: never;
-    query?: {
-        /**
-         * 页码
-         */
-        page?: number;
-        /**
-         * 每页数量
-         */
-        pageSize?: number;
-        /**
-         * 搜索关键词
-         */
-        search?: string;
-    };
-    url: '/api/v1/enterprises';
-};
-
-export type GetEnterprisesResponses = {
-    /**
-     * 企业列表
-     */
-    200: unknown;
-};
-
-export type CreateEnterpriseData = {
-    body: CreateEnterpriseDto;
-    path?: never;
-    query?: never;
-    url: '/api/v1/enterprises';
-};
-
-export type CreateEnterpriseErrors = {
-    /**
-     * 企业标识已存在
-     */
-    409: unknown;
-};
-
-export type CreateEnterpriseResponses = {
-    /**
-     * 企业创建成功
-     */
-    201: unknown;
-};
-
-export type DeleteEnterpriseData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/v1/enterprises/{id}';
-};
-
-export type DeleteEnterpriseErrors = {
-    /**
-     * 企业不存在
-     */
-    404: unknown;
-};
-
-export type DeleteEnterpriseResponses = {
-    /**
-     * 删除成功
-     */
-    200: unknown;
-};
-
-export type GetEnterpriseByIdData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/v1/enterprises/{id}';
-};
-
-export type GetEnterpriseByIdErrors = {
-    /**
-     * 企业不存在
-     */
-    404: unknown;
-};
-
-export type GetEnterpriseByIdResponses = {
-    /**
-     * 企业详情
-     */
-    200: unknown;
-};
-
-export type UpdateEnterpriseData = {
-    body: UpdateEnterpriseDto;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/api/v1/enterprises/{id}';
-};
-
-export type UpdateEnterpriseErrors = {
-    /**
-     * 企业不存在
-     */
-    404: unknown;
-    /**
-     * 企业标识已存在
-     */
-    409: unknown;
-};
-
-export type UpdateEnterpriseResponses = {
-    /**
-     * 更新成功
-     */
-    200: unknown;
-};
-
 export type AdminLoginData = {
     body: AdminLoginDto;
     path?: never;
@@ -1191,6 +1260,29 @@ export type GetEnterpriseAppsBySuperAdminData = {
 export type GetEnterpriseAppsBySuperAdminResponses = {
     /**
      * 应用列表
+     */
+    200: unknown;
+};
+
+export type GetEnterpriseActivityData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * 页码
+         */
+        page?: number;
+        /**
+         * 每页数量
+         */
+        pageSize?: number;
+    };
+    url: '/api/v1/admin/enterprise/activity';
+};
+
+export type GetEnterpriseActivityResponses = {
+    /**
+     * 活动记录列表
      */
     200: unknown;
 };

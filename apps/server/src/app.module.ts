@@ -21,6 +21,7 @@ import { App } from './modules/app/app.entity';
 import { Session } from './modules/auth/session.entity';
 import { AuthorizationCode } from './modules/auth/authorization-code.entity';
 import { RefreshToken } from './modules/auth/refresh-token.entity';
+import { LoginActivity } from './modules/auth/login-activity.entity';
 import { Enterprise } from './modules/enterprise/enterprise.entity';
 
 @Module({
@@ -42,7 +43,7 @@ import { Enterprise } from './modules/enterprise/enterprise.entity';
         database: config.get<string>('database.database') || './sso.sqlite',
         autoLoadEntities: true,
         synchronize: true,
-        entities: [User, App, Session, AuthorizationCode, RefreshToken, Enterprise],
+        entities: [User, App, Session, AuthorizationCode, RefreshToken, LoginActivity, Enterprise],
       }),
     }),
     // JWT 基础设施（全局）

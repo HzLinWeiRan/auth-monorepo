@@ -2,10 +2,13 @@ import {
   Injectable,
   ForbiddenException,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { AuthService, PublicUser } from '../auth/auth.service';
 import { UserService } from '../user/user.service';
 import { EnterpriseService } from '../enterprise/enterprise.service';
 import { AppService } from '../app/app.service';
+import { LoginActivity } from '../auth/login-activity.entity';
 import { AdminLoginDto } from './dto/admin-login.dto';
 import { AdminCreateUserDto } from './dto/admin-create-user.dto';
 import { AdminUpdateUserDto } from './dto/admin-update-user.dto';
@@ -18,6 +21,8 @@ export class AdminService {
     private readonly users: UserService,
     private readonly enterprises: EnterpriseService,
     private readonly apps: AppService,
+    @InjectRepository(LoginActivity)
+    private readonly loginActivityRepo: Repository<LoginActivity>,
   ) {}
 
   /**
@@ -80,11 +85,30 @@ export class AdminService {
 
   /** 企业管理员：更新用户 */
   async updateUser(userId: string, dto: AdminUpdateUserDto) {
+    const user = await this.users.findById(userId);
+
+    // 超级管理员账号禁止禁用、禁止改动角色
+    if (this.users.isSuperAdmin(user)) {
+      if (dto.isEnabled !== undefined && dto.isEnabled === false) {
+        throw new ForbiddenException('无法禁用超级管理员账号');
+      }
+      if (dto.roles !== undefined) {
+        throw new ForbiddenException('无法修改超级管理员的角色');
+      }
+    }
+
     return this.users.updateUser(userId, dto);
   }
 
   /** 企业管理员：删除用户（软删除） */
   async removeUser(userId: string) {
+    const user = await this.users.findById(userId);
+
+    // 超级管理员账号禁止删除
+    if (this.users.isSuperAdmin(user)) {
+      throw new ForbiddenException('无法删除超级管理员账号');
+    }
+
     return this.users.removeUser(userId);
   }
 
@@ -106,5 +130,20 @@ export class AdminService {
   /** 企业管理员：删除应用 */
   async removeApp(appId: string) {
     return this.apps.remove(appId);
+  }
+
+  /** 企业管理员：查看本企业登录活动记录 */
+  async getEnterpriseActivity(
+    enterpriseId: string,
+    page = 1,
+    pageSize = 20,
+  ): Promise<{ items: LoginActivity[]; total: number }> {
+    const [items, total] = await this.loginActivityRepo.findAndCount({
+      where: { enterpriseId },
+      order: { createdAt: 'DESC' },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    });
+    return { items, total };
   }
 }

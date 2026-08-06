@@ -19,6 +19,7 @@ import {
   Building2,
   Users,
   AppWindow,
+  Activity,
   LogOut,
   Shield,
   User,
@@ -54,8 +55,9 @@ import type { AdminUser } from '@nestjs-sso/shared';
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: '概览', adminOnly: false },
   { href: '/dashboard/enterprises', icon: Building2, label: '企业管理', adminOnly: true },
-  { href: '/dashboard/users', icon: Users, label: '用户管理', adminOnly: false },
+  { href: '/dashboard/users', icon: Users, label: '用户管理', adminOnly: true },
   { href: '/dashboard/apps', icon: AppWindow, label: '应用管理', adminOnly: false },
+  { href: '/dashboard/activity', icon: Activity, label: '活动记录', adminOnly: false },
 ];
 
 // ---- Props ----

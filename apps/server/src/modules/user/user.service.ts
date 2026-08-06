@@ -8,6 +8,7 @@ import { Repository, Like } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { User } from './user.entity';
 import { RegisterDto } from './dto/register.dto';
+import { Role } from '../../common/enums/role.enum';
 
 /**
  * 用户服务：负责账号注册、查询与密码校验。
@@ -23,7 +24,7 @@ export class UserService {
   ) {}
 
   /** 注册新用户（需指定所属企业） */
-  async register(dto: RegisterDto, enterpriseId?: string): Promise<User> {
+  async register(dto: RegisterDto, enterpriseId?: string, roles?: string): Promise<User> {
     const exists = await this.userRepo.findOne({
       where: enterpriseId
         ? { username: dto.username, enterpriseId }
@@ -40,7 +41,7 @@ export class UserService {
       passwordHash,
       email: dto.email,
       enterpriseId: enterpriseId || null,
-      roles: enterpriseId ? 'user' : 'super_admin',
+      roles: roles || (enterpriseId ? 'user' : 'super_admin'),
     });
     return this.userRepo.save(user);
   }
@@ -145,5 +146,11 @@ export class UserService {
       return false;
     }
     return bcrypt.compare(plain, user.passwordHash);
+  }
+
+  /** 判断用户是否为超级管理员 */
+  isSuperAdmin(user: User): boolean {
+    const roles = user.roles?.split(',').map((r) => r.trim()) || [];
+    return roles.includes(Role.SUPER_ADMIN);
   }
 }

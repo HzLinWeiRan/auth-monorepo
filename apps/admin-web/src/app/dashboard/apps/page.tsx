@@ -29,11 +29,13 @@ import { useApps, useCreateApp, useUpdateApp, useDeleteApp } from '@/hooks/use-a
 import type { AppInfo } from '@nestjs-sso/shared';
 
 export default function AppsPage() {
-  const { data, isLoading } = useApps();
+  const { data, isLoading, search, setSearch } = useApps();
   const createApp = useCreateApp();
+  const updateApp = useUpdateApp();
   const deleteApp = useDeleteApp();
 
   const [modalOpen, setModalOpen] = useState(false);
+  const [editMode, setEditMode] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedApp, setSelectedApp] = useState<AppInfo | null>(null);
   const [formName, setFormName] = useState('');
@@ -44,11 +46,24 @@ export default function AppsPage() {
   const [deleteTarget, setDeleteTarget] = useState<AppInfo | null>(null);
 
   function openCreate() {
+    setEditMode(false);
+    setSelectedApp(null);
     setFormName('');
     setFormRedirectUri('');
     setFormLogoutUrl('');
     setFormLogoUrl('');
     setFormPrimaryColor('');
+    setModalOpen(true);
+  }
+
+  function openEdit(record: AppInfo) {
+    setEditMode(true);
+    setSelectedApp(record);
+    setFormName(record.name);
+    setFormRedirectUri(record.redirectUri);
+    setFormLogoutUrl(record.logoutCallbackUrl || '');
+    setFormLogoUrl(record.logoUrl || '');
+    setFormPrimaryColor(record.primaryColor || '');
     setModalOpen(true);
   }
 
@@ -60,14 +75,28 @@ export default function AppsPage() {
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     try {
-      await createApp.mutateAsync({
-        name: formName,
-        redirectUri: formRedirectUri,
-        logoutCallbackUrl: formLogoutUrl || undefined,
-        logoUrl: formLogoUrl || undefined,
-        primaryColor: formPrimaryColor || undefined,
-      });
-      toast.success('创建成功');
+      if (editMode && selectedApp) {
+        await updateApp.mutateAsync({
+          appId: selectedApp.appId,
+          body: {
+            name: formName,
+            redirectUri: formRedirectUri,
+            logoutCallbackUrl: formLogoutUrl || undefined,
+            logoUrl: formLogoUrl || undefined,
+            primaryColor: formPrimaryColor || undefined,
+          },
+        });
+        toast.success('更新成功');
+      } else {
+        await createApp.mutateAsync({
+          name: formName,
+          redirectUri: formRedirectUri,
+          logoutCallbackUrl: formLogoutUrl || undefined,
+          logoUrl: formLogoUrl || undefined,
+          primaryColor: formPrimaryColor || undefined,
+        });
+        toast.success('创建成功');
+      }
       setModalOpen(false);
     } catch (err: any) {
       toast.error(err?.message || '操作失败');
@@ -84,6 +113,8 @@ export default function AppsPage() {
     }
   }
 
+  const isSubmitting = createApp.isPending || updateApp.isPending;
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -95,6 +126,17 @@ export default function AppsPage() {
       </div>
 
       <div className="rounded-xl border bg-card">
+        <div className="border-b p-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="搜索应用名称或 App ID..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
         <Table>
           <TableHeader>
             <TableRow>
@@ -137,6 +179,9 @@ export default function AppsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => openEdit(item)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                       <Button variant="ghost" size="icon" onClick={() => openDetail(item)}>
                         <Eye className="h-4 w-4" />
                       </Button>
@@ -157,12 +202,12 @@ export default function AppsPage() {
         </Table>
       </div>
 
-      {/* Create Dialog */}
+      {/* Create/Edit Dialog */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>新建应用</DialogTitle>
-            <DialogDescription>创建一个新的 OAuth 2.0 应用</DialogDescription>
+            <DialogTitle>{editMode ? '编辑应用' : '新建应用'}</DialogTitle>
+            <DialogDescription>{editMode ? '修改应用配置' : '创建一个新的 OAuth 2.0 应用'}</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit}>
             <div className="space-y-4 py-4">
@@ -226,9 +271,9 @@ export default function AppsPage() {
               <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
                 取消
               </Button>
-              <Button type="submit" disabled={createApp.isPending}>
-                {createApp.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                创建
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {editMode ? '保存' : '创建'}
               </Button>
             </DialogFooter>
           </form>
