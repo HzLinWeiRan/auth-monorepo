@@ -1,6 +1,7 @@
 import {
   Injectable,
   ForbiddenException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -84,8 +85,17 @@ export class AdminService {
   }
 
   /** 企业管理员：更新用户 */
-  async updateUser(userId: string, dto: AdminUpdateUserDto) {
+  async updateUser(enterpriseId: string, userId: string, dto: AdminUpdateUserDto) {
     const user = await this.users.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
+
+    // 企业隔离校验：企业管理员只能修改本企业用户
+    if (enterpriseId && user.enterpriseId !== enterpriseId) {
+      throw new ForbiddenException('无权操作其他企业的用户');
+    }
 
     // 超级管理员账号禁止禁用、禁止改动角色
     if (this.users.isSuperAdmin(user)) {
@@ -101,8 +111,17 @@ export class AdminService {
   }
 
   /** 企业管理员：删除用户（软删除） */
-  async removeUser(userId: string) {
+  async removeUser(enterpriseId: string, userId: string) {
     const user = await this.users.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
+
+    // 企业隔离校验：企业管理员只能删除本企业用户
+    if (enterpriseId && user.enterpriseId !== enterpriseId) {
+      throw new ForbiddenException('无权操作其他企业的用户');
+    }
 
     // 超级管理员账号禁止删除
     if (this.users.isSuperAdmin(user)) {

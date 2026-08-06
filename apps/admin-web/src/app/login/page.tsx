@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -260,6 +261,12 @@ export default function LoginPage() {
                     <br />
                     admin / Admin@123
                   </p>
+                </div>
+
+                <div className="text-center text-sm text-muted-foreground">
+                  没有账号？<Link href="/register" className="text-primary hover:underline">注册普通用户</Link>
+                  <span className="mx-2">|</span>
+                  <Link href="/register/enterprise" className="text-primary hover:underline">企业注册</Link>
                 </div>
               </CardContent>
             </Card>

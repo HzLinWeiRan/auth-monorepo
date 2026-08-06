@@ -140,18 +140,24 @@ export class AdminController {
   @ApiOperation({ operationId: 'updateEnterpriseUser', summary: '更新用户' })
   @ApiResponse({ status: 200, description: '更新成功' })
   updateUser(
+    @Req() req: Request,
     @Param('id') userId: string,
     @Body() dto: AdminUpdateUserDto,
   ) {
-    return this.adminService.updateUser(userId, dto);
+    const user = req.user as any;
+    return this.adminService.updateUser(user.enterpriseId, userId, dto);
   }
 
   @Delete('enterprise/users/:id')
   @Roles(Role.SUPER_ADMIN, Role.ENTERPRISE_ADMIN)
   @ApiOperation({ operationId: 'deleteEnterpriseUser', summary: '删除用户（软删除）' })
   @ApiResponse({ status: 200, description: '删除成功' })
-  removeUser(@Param('id') userId: string) {
-    return this.adminService.removeUser(userId);
+  removeUser(
+    @Req() req: Request,
+    @Param('id') userId: string,
+  ) {
+    const user = req.user as any;
+    return this.adminService.removeUser(user.enterpriseId, userId);
   }
 
   @Get('enterprise/apps')
