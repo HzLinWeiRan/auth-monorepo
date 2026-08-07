@@ -14,6 +14,8 @@ import {
   LogIn,
   KeyRound,
   User,
+  AlertCircle,
+  AlertCircleIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,7 +34,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
 import { useLoginMutation } from '@/hooks/use-login';
@@ -63,20 +65,37 @@ export default function LoginPage() {
     },
   });
 
-  const onSubmit = async (values: LoginFormValues) => {
+  const handleLogin = async () => {
+    if (loginMutation.isPending) return;
+
+    const isValid = await form.trigger();
+    if (!isValid) return;
+
+    const values = form.getValues();
     try {
       await loginMutation.mutateAsync(values);
       toast.success('登录成功', {
         description: '正在跳转到管理后台...',
+        duration: 3000,
       });
       router.push('/dashboard');
     } catch (err: any) {
       const message =
         err?.message || err?.response?.data?.message || '登录失败，请检查用户名和密码';
-      toast.error('登录失败', {
-        description: message,
+
+      // 前端日志记录，便于追踪错误场景和频率
+      console.error('[Login] 登录失败', {
+        username: values.username,
+        errorMessage: message,
+        errorCode: err?.code || err?.statusCode,
+        timestamp: new Date().toISOString(),
       });
     }
+  };
+
+  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    handleLogin();
   };
 
   return (
@@ -154,18 +173,21 @@ export default function LoginPage() {
               <CardContent>
                 {/* Server-side error alert */}
                 {loginMutation.isError && (
-                  <Alert variant="destructive" className="mb-6">
+                  <Alert variant="destructive" className='mb-6 max-w-md'>
+                    <AlertCircleIcon />
+                    <AlertTitle>登录失败</AlertTitle>
                     <AlertDescription>
-                      {loginMutation.error instanceof Error
-                        ? loginMutation.error.message
-                        : '登录失败，请检查用户名和密码'}
+                      {(() => {
+                        const err: any = loginMutation.error;
+                        return err?.message || '登录失败，请检查用户名和密码';
+                      })()}
                     </AlertDescription>
                   </Alert>
                 )}
 
                 <Form {...form}>
                   <form
-                    onSubmit={form.handleSubmit(onSubmit)}
+                    onSubmit={handleFormSubmit}
                     className="space-y-5"
                   >
                     {/* Username field */}
@@ -235,10 +257,11 @@ export default function LoginPage() {
 
                     {/* Submit button */}
                     <Button
-                      type="submit"
+                      type="button"
                       size="lg"
                       className="w-full"
                       disabled={loginMutation.isPending}
+                      onClick={handleLogin}
                     >
                       {loginMutation.isPending ? (
                         <>

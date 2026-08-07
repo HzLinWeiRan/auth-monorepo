@@ -2,7 +2,9 @@ import {
   Injectable,
   ForbiddenException,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AuthService, PublicUser } from '../auth/auth.service';
@@ -22,6 +24,7 @@ export class AdminService {
     private readonly users: UserService,
     private readonly enterprises: EnterpriseService,
     private readonly apps: AppService,
+    private readonly config: ConfigService,
     @InjectRepository(LoginActivity)
     private readonly loginActivityRepo: Repository<LoginActivity>,
   ) {}
@@ -138,6 +141,11 @@ export class AdminService {
 
   /** 企业管理员：创建本企业应用 */
   async createEnterpriseApp(enterpriseId: string, dto: any) {
+    const limit = this.config.get<number>('appLimitPerEnterprise') ?? 10;
+    const count = await this.apps.countByEnterpriseId(enterpriseId);
+    if (count >= limit) {
+      throw new BadRequestException(`应用数量已达上限（${limit} 个），无法继续创建`);
+    }
     return this.apps.create(dto, enterpriseId);
   }
 

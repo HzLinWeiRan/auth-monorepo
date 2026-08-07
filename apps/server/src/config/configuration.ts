@@ -38,4 +38,6 @@ export default () => ({
     /** OAuth 2.0 Authorization Code 有效期（毫秒） */
     authorizationCodeTtlMs: parseInt(process.env.AUTHORIZATION_CODE_TTL_MS, 10) || 60000,
   },
+  /** 每个企业最多可创建的应用数量 */
+  appLimitPerEnterprise: parseInt(process.env.APP_LIMIT_PER_ENTERPRISE, 10) || 10,
 });

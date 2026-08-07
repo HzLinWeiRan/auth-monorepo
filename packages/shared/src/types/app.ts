@@ -2,6 +2,7 @@
 export interface AppInfo {
   id: string;
   appId: string;
+  secret?: string;
   name: string;
   redirectUri: string;
   logoutCallbackUrl?: string;

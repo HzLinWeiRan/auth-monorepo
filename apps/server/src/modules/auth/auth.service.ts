@@ -1,6 +1,7 @@
 import {
   Injectable,
   UnauthorizedException,
+  BadRequestException,
   Logger,
   NotFoundException,
 } from '@nestjs/common';
@@ -173,12 +174,12 @@ export class AuthService {
     }
 
     if (!user) {
-      throw new UnauthorizedException('用户名或密码错误');
+      throw new BadRequestException('用户名或密码错误');
     }
     
     const ok = await this.users.validatePassword(user, dto.password);
     if (!ok) {
-      throw new UnauthorizedException('用户名或密码错误');
+      throw new BadRequestException('用户名或密码错误');
     }
 
     // 记录登录活动（仅 OAuth 登录，即通过 clientId 关联到企业）

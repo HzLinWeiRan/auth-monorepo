@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Trash2, Eye, Loader2, Search, Pencil } from 'lucide-react';
+import { Plus, Trash2, Eye, Loader2, Search, Pencil, Copy, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -44,6 +44,14 @@ export default function AppsPage() {
   const [formLogoUrl, setFormLogoUrl] = useState('');
   const [formPrimaryColor, setFormPrimaryColor] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<AppInfo | null>(null);
+  const [createdApp, setCreatedApp] = useState<AppInfo | null>(null);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  function copyToClipboard(text: string, field: string) {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
+  }
 
   function openCreate() {
     setEditMode(false);
@@ -88,18 +96,27 @@ export default function AppsPage() {
         });
         toast.success('更新成功');
       } else {
-        await createApp.mutateAsync({
+        const result = await createApp.mutateAsync({
           name: formName,
           redirectUri: formRedirectUri,
           logoutCallbackUrl: formLogoutUrl || undefined,
           logoUrl: formLogoUrl || undefined,
           primaryColor: formPrimaryColor || undefined,
         });
+        setCreatedApp(result as AppInfo);
         toast.success('创建成功');
       }
       setModalOpen(false);
     } catch (err: any) {
-      toast.error(err?.message || '操作失败');
+      const message: string = err?.message || '操作失败';
+      if (message.includes('已达上限')) {
+        toast.error('应用数量已达上限', {
+          description: '每个企业最多可创建 10 个应用。如需更多，请联系超级管理员。',
+          duration: 6000,
+        });
+      } else {
+        toast.error(message);
+      }
     }
   };
 
@@ -165,7 +182,21 @@ export default function AppsPage() {
               data.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell className="font-medium">{item.name}</TableCell>
-                  <TableCell className="font-mono text-xs">{item.appId}</TableCell>
+                  <TableCell className="font-mono text-xs">
+                    <span className="mr-1">{item.appId}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 inline-flex"
+                      onClick={() => copyToClipboard(item.appId, `appId-${item.id}`)}
+                    >
+                      {copiedField === `appId-${item.id}` ? (
+                        <Check className="h-3 w-3 text-green-500" />
+                      ) : (
+                        <Copy className="h-3 w-3" />
+                      )}
+                    </Button>
+                  </TableCell>
                   <TableCell className="text-sm text-muted-foreground max-w-[200px] truncate">
                     {item.redirectUri}
                   </TableCell>
@@ -293,9 +324,46 @@ export default function AppsPage() {
                 <span className="font-medium">{selectedApp.name}</span>
               </div>
               <Separator />
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">App ID</span>
-                <span className="font-mono text-xs">{selectedApp.appId}</span>
+                <span className="flex items-center gap-1">
+                  <span className="font-mono text-xs">{selectedApp.appId}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => copyToClipboard(selectedApp.appId, 'detail-appId')}
+                  >
+                    {copiedField === 'detail-appId' ? (
+                      <Check className="h-3 w-3 text-green-500" />
+                    ) : (
+                      <Copy className="h-3 w-3" />
+                    )}
+                  </Button>
+                </span>
+              </div>
+              <Separator />
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Client Secret</span>
+                <span className="flex items-center gap-1">
+                  <span className="font-mono text-xs max-w-[180px] truncate">
+                    {selectedApp.secret || '***'}
+                  </span>
+                  {selectedApp.secret && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => copyToClipboard(selectedApp.secret!, 'detail-secret')}
+                    >
+                      {copiedField === 'detail-secret' ? (
+                        <Check className="h-3 w-3 text-green-500" />
+                      ) : (
+                        <Copy className="h-3 w-3" />
+                      )}
+                    </Button>
+                  )}
+                </span>
               </div>
               <Separator />
               <div className="flex justify-between">
@@ -349,6 +417,63 @@ export default function AppsPage() {
         loading={deleteApp.isPending}
         onConfirm={() => deleteTarget && handleDelete(deleteTarget.appId)}
       />
+
+      {/* Post-Creation Secret Dialog */}
+      <Dialog open={!!createdApp} onOpenChange={(open) => !open && setCreatedApp(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>应用创建成功</DialogTitle>
+            <DialogDescription>
+              请立即保存以下凭据，<span className="font-semibold text-destructive">Client Secret 仅显示一次</span>，关闭后将无法再次查看。
+            </DialogDescription>
+          </DialogHeader>
+          {createdApp && (
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">Client ID</Label>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 rounded-md bg-muted px-3 py-2 text-sm font-mono break-all">
+                    {createdApp.appId}
+                  </code>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(createdApp.appId, 'appId')}
+                  >
+                    {copiedField === 'appId' ? (
+                      <Check className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">Client Secret</Label>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 rounded-md bg-muted px-3 py-2 text-sm font-mono break-all">
+                    {createdApp.secret}
+                  </code>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(createdApp.secret!, 'secret')}
+                  >
+                    {copiedField === 'secret' ? (
+                      <Check className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button onClick={() => setCreatedApp(null)}>我知道了</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

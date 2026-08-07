@@ -263,8 +263,8 @@ def get_user_info(access_token):
             <div>
               <p className="font-medium">在管理后台创建应用</p>
               <p className="text-sm text-muted-foreground">
-                前往「应用管理」页面，点击「新建应用」，填写应用名称和回调地址。创建后会生成 <code className="rounded bg-muted px-1 text-xs">client_id</code> 和{' '}
-                <code className="rounded bg-muted px-1 text-xs">client_secret</code>。
+                前往「应用管理」页面，点击「新建应用」，填写应用名称和回调地址。创建成功后会在弹窗中展示 <code className="rounded bg-muted px-1 text-xs">client_id</code> 和{' '}
+                <code className="rounded bg-muted px-1 text-xs">client_secret</code>，请立即保存，<span className="font-semibold text-destructive">Client Secret 仅显示一次</span>。
               </p>
             </div>
           </div>
