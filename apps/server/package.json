@@ -1,10 +1,6 @@
 {
   "name": "@nestjs-sso/server",
   "version": "1.0.0",
-  "engines": {
-    "node": ">=v22.18.0",
-    "npm": ">=9.0.0"
-  },
   "description": "NestJS SSO 认证中心后端服务",
   "author": "",
   "private": true,
