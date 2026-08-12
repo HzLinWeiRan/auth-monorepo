@@ -33,7 +33,7 @@ export class User {
   passwordHash: string;
 
   @Column({ nullable: true, length: 128 })
-  email: string;
+  email: string | null;
 
   /** 软删除标记：true 表示已删除，查询时排除 */
   @Column({ name: 'is_deleted', type: 'boolean', default: false })
@@ -46,7 +46,7 @@ export class User {
   /** 所属企业 ID（null 表示平台级账号，如超级管理员） */
   @Index()
   @Column({ name: 'enterprise_id', nullable: true })
-  enterpriseId: string;
+  enterpriseId: string | null;
 
   @ManyToOne(() => Enterprise, { nullable: true })
   @JoinColumn({ name: 'enterprise_id' })

@@ -33,13 +33,13 @@ export class AppService {
       logoutCallbackUrl: dto.logoutCallbackUrl,
       grantTypes: dto.grantTypes || JSON.stringify(['authorization_code', 'refresh_token']),
       scopes: dto.scopes || JSON.stringify(['openid', 'profile', 'email']),
-      redirectUris: dto.redirectUris || null,
+      redirectUris: dto.redirectUris,
       applicationType: dto.applicationType || 'web',
       tokenEndpointAuthMethod: dto.tokenEndpointAuthMethod || 'client_secret_post',
-      postLogoutRedirectUris: dto.postLogoutRedirectUris || null,
-      logoUrl: dto.logoUrl || null,
-      primaryColor: dto.primaryColor || null,
-      enterpriseId: enterpriseId || null,
+      postLogoutRedirectUris: dto.postLogoutRedirectUris,
+      logoUrl: dto.logoUrl,
+      primaryColor: dto.primaryColor,
+      enterpriseId: enterpriseId,
     });
     return this.appRepo.save(app);
   }

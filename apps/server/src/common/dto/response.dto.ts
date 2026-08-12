@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 // 从 @nestjs-sso/shared 重新导出共享类型
-export { ApiResponse, PaginatedResponse, PagedData } from '@nestjs-sso/shared';
+export type { ApiResponse, PaginatedResponse, PagedData } from '@nestjs-sso/shared';
 
 /**
  * 错误响应数据体（由 HttpExceptionFilter 统一序列化）。

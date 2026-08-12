@@ -23,8 +23,8 @@ export class LoginActivity {
   username: string;
 
   @Index()
-  @Column({ name: 'enterprise_id', length: 36 })
-  enterpriseId: string;
+  @Column({ name: 'enterprise_id', nullable: true, length: 36 })
+  enterpriseId: string | null;
 
   @Column({ name: 'app_id', nullable: true, length: 64 })
   appId: string;

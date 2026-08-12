@@ -40,7 +40,7 @@ export class UserService {
       username: dto.username,
       passwordHash,
       email: dto.email,
-      enterpriseId: enterpriseId || null,
+      enterpriseId: enterpriseId,
       roles: roles || (enterpriseId ? 'user' : 'super_admin'),
     });
     return this.userRepo.save(user);

@@ -11,7 +11,7 @@ import {
   ParseIntPipe,
   DefaultValuePipe,
 } from '@nestjs/common';
-import { Request } from 'express';
+import type { Request } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { AdminLoginDto } from './dto/admin-login.dto';

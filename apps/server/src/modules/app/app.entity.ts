@@ -51,19 +51,19 @@ export class App {
 
   /** 单点登出（SLO）时 IdP 广播通知的回调地址 */
   @Column({ name: 'logout_callback_url', nullable: true })
-  logoutCallbackUrl: string;
+  logoutCallbackUrl: string | null;
 
   /** OAuth 2.0 允许的 grant_types（JSON 数组） */
   @Column({ name: 'grant_types', type: 'text', nullable: true })
-  grantTypes: string;
+  grantTypes: string | null;
 
   /** OAuth 2.0 允许的 scopes（JSON 数组，如 '["openid","profile","email"]'） */
   @Column({ type: 'text', nullable: true })
-  scopes: string;
+  scopes: string | null;
 
   /** OAuth 2.0 多回调地址（JSON 数组，优先于 redirectUri 单字段） */
   @Column({ name: 'redirect_uris', type: 'text', nullable: true })
-  redirectUris: string;
+  redirectUris: string | null;
 
   /** 应用类型：web（Web 应用）或 native（原生应用） */
   @Column({ name: 'application_type', length: 16, default: 'web' })
@@ -75,17 +75,17 @@ export class App {
 
   /** OIDC RP-Initiated Logout 允许的回调地址（JSON 数组） */
   @Column({ name: 'post_logout_redirect_uris', type: 'text', nullable: true })
-  postLogoutRedirectUris: string;
+  postLogoutRedirectUris: string | null;
 
   // ---- 个性化登录页品牌字段 ----
 
   /** 应用 Logo URL（展示在登录页左上角），为空则使用默认盾牌图标 */
   @Column({ name: 'logo_url', type: 'text', nullable: true })
-  logoUrl: string;
+  logoUrl: string | null;
 
   /** 品牌主色（Hex），如 #2563EB。为空则使用默认蓝色 */
   @Column({ name: 'primary_color', length: 7, nullable: true })
-  primaryColor: string;
+  primaryColor: string | null;
 
   /** 所属企业 ID（null 表示平台级应用） */
   @Index()

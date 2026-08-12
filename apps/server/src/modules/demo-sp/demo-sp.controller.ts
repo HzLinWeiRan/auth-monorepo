@@ -7,7 +7,7 @@ import {
   Res,
   OnModuleInit,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { randomBytes, createHash } from 'crypto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';

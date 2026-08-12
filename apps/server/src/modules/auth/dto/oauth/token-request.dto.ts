@@ -42,7 +42,7 @@ export class TokenRequestDto {
   })
   @IsOptional()
   @IsString()
-  client_secret?: string;
+  client_secret: string;
 
   @ApiPropertyOptional({
     description: 'PKCE code_verifier（授权时使用了 code_challenge 则必填）',

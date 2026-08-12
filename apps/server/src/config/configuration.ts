@@ -3,10 +3,10 @@
  * 通过 @nestjs/config 的 ConfigModule 注入，使用时注入 ConfigService 即可。
  */
 export default () => ({
-  port: parseInt(process.env.PORT, 10) || 3000,
+  port: Number(process.env.PORT) || 3000,
   apiPrefix: process.env.API_PREFIX || 'api/v1',
   /** OAuth 2.0 / OIDC Issuer 标识（用于 id_token 的 iss claim） */
-  issuer: process.env.ISSUER || `http://localhost:${parseInt(process.env.PORT, 10) || 3000}`,
+  issuer: process.env.ISSUER || `http://localhost:${Number(process.env.PORT) || 3000}`,
   database: {
     // 默认使用 better-sqlite3（纯预编译二进制，免本地编译）；可切换 postgres/mysql
     type: (process.env.DB_TYPE || 'better-sqlite3') as
@@ -28,16 +28,16 @@ export default () => ({
   },
   session: {
     // 全局会话有效期（毫秒）
-    ttlMs: parseInt(process.env.SESSION_TTL_MS, 10) || 86400000,
+    ttlMs: Number(process.env.SESSION_TTL_MS) || 86400000,
   },
   ticket: {
     // 票据有效期（毫秒）
-    ttlMs: parseInt(process.env.TICKET_TTL_MS, 10) || 60000,
+    ttlMs: Number(process.env.TICKET_TTL_MS) || 60000,
   },
   oauth: {
     /** OAuth 2.0 Authorization Code 有效期（毫秒） */
-    authorizationCodeTtlMs: parseInt(process.env.AUTHORIZATION_CODE_TTL_MS, 10) || 60000,
+    authorizationCodeTtlMs: Number(process.env.AUTHORIZATION_CODE_TTL_MS) || 60000,
   },
   /** 每个企业最多可创建的应用数量 */
-  appLimitPerEnterprise: parseInt(process.env.APP_LIMIT_PER_ENTERPRISE, 10) || 10,
+  appLimitPerEnterprise: Number(process.env.APP_LIMIT_PER_ENTERPRISE) || 10,
 });

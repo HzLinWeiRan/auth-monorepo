@@ -34,8 +34,8 @@ export interface TokenPair {
 export interface PublicUser {
   id: string;
   username: string;
-  email?: string;
-  enterpriseId?: string;
+  email?: string | null;
+  enterpriseId?: string | null;
   roles?: string;
 }
 
@@ -191,7 +191,7 @@ export class AuthService {
         username: user.username,
         enterpriseId: app?.enterpriseId || user.enterpriseId,
         appId: clientId,
-        appName: app?.name || null,
+        appName: app?.name,
       });
       await this.loginActivityRepo.save(activity);
     }
@@ -357,6 +357,13 @@ export class AuthService {
       throw new UnauthorizedException('客户端密钥错误');
     }
 
+    if (!dto.code) {
+      throw new UnauthorizedException('code 缺失');
+    }
+    if (!dto.redirect_uri) {
+      throw new UnauthorizedException('redirect_uri 缺失');
+    }
+
     const result = await this.authorizationCodes.consume(
       dto.code,
       dto.client_id,
@@ -453,6 +460,9 @@ export class AuthService {
       throw new UnauthorizedException('客户端密钥错误');
     }
 
+    if (!dto.refresh_token) {
+      throw new UnauthorizedException('refresh_token 缺失');
+    }
     const rotateResult = await this.refreshTokens.rotate(dto.refresh_token, dto.client_id);
 
     // 从 refresh token 解码获取 sub，再从 DB 查询完整的用户信息
@@ -649,17 +659,19 @@ export class AuthService {
    * 验证 id_token_hint → 失效全局会话 → 广播 SLO 通知。
    */
   async endSession(idTokenHint: string): Promise<{ userId?: string }> {
-    let payload: { sub?: string; sid?: string } | null = null;
+    let payload: { sub?: string; sid?: string } | undefined;
     try {
       const decoded = rawJwt.decode(idTokenHint, { complete: true });
       if (decoded && decoded.header.alg === 'RS256' && decoded.header.kid) {
         const publicKey = await this.keyService.getPublicKeyByKid(decoded.header.kid as string);
         if (publicKey) {
-          payload = rawJwt.verify(idTokenHint, publicKey, { algorithms: ['RS256'] }) as typeof payload;
+          const verified = rawJwt.verify(idTokenHint, publicKey, { algorithms: ['RS256'] });
+          // verify 返回 object（id_token 为 RS256 签名的对象型 JWT），此处有意跨类型断言，先经 unknown 转换
+          payload = verified as unknown as typeof payload;
         }
       }
       if (!payload) {
-        payload = this.jwt.verify(idTokenHint) as typeof payload;
+        payload = this.jwt.verify(idTokenHint) as unknown as typeof payload;
       }
     } catch {
       throw new UnauthorizedException('id_token_hint 无效');
