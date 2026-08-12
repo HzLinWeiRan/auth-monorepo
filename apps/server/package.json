@@ -6,7 +6,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "pwd && npm run build -w @nestjs-sso/shared && pwd && nest build",
+    "build": "ls ../../ && pwd && npm run build -w @nestjs-sso/shared && pwd && nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
