@@ -88,7 +88,11 @@ export class AdminService {
   }
 
   /** 企业管理员：更新用户 */
-  async updateUser(enterpriseId: string, userId: string, dto: AdminUpdateUserDto) {
+  async updateUser(
+    enterpriseId: string,
+    userId: string,
+    dto: AdminUpdateUserDto,
+  ) {
     const user = await this.users.findById(userId);
 
     if (!user) {
@@ -144,7 +148,9 @@ export class AdminService {
     const limit = this.config.get<number>('appLimitPerEnterprise') ?? 10;
     const count = await this.apps.countByEnterpriseId(enterpriseId);
     if (count >= limit) {
-      throw new BadRequestException(`应用数量已达上限（${limit} 个），无法继续创建`);
+      throw new BadRequestException(
+        `应用数量已达上限（${limit} 个），无法继续创建`,
+      );
     }
     return this.apps.create(dto, enterpriseId);
   }

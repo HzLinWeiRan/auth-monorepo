@@ -20,7 +20,7 @@ async function startServer(app: NestExpressApplication): Promise<void> {
 /** 应用创建入口：创建并配置 app，但不监听端口。被 import（如 Vercel 函数）时复用此函数。 */
 async function bootstrap() {
   const app = await createApp();
-  startServer(app)
+  startServer(app);
 }
 
 void bootstrap();

@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsEmail, IsOptional, MinLength, MaxLength, Matches } from 'class-validator';
+import {
+  IsString,
+  IsEmail,
+  IsOptional,
+  MinLength,
+  MaxLength,
+  Matches,
+} from 'class-validator';
 
 /**
  * 企业注册入参：同时创建企业 + 企业管理员账号。
@@ -29,10 +36,15 @@ export class RegisterEnterpriseDto {
   @MaxLength(128)
   enterpriseName: string;
 
-  @ApiProperty({ example: 'tencent', description: '企业标识（slug，仅小写字母、数字和短横线）' })
+  @ApiProperty({
+    example: 'tencent',
+    description: '企业标识（slug，仅小写字母、数字和短横线）',
+  })
   @IsString()
   @MinLength(2)
   @MaxLength(64)
-  @Matches(/^[a-z0-9-]+$/, { message: '企业标识只能包含小写字母、数字和短横线' })
+  @Matches(/^[a-z0-9-]+$/, {
+    message: '企业标识只能包含小写字母、数字和短横线',
+  })
   enterpriseSlug: string;
 }

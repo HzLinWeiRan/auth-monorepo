@@ -1,5 +1,11 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsEmail, IsOptional, MinLength, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsEmail,
+  IsOptional,
+  MinLength,
+  MaxLength,
+} from 'class-validator';
 
 /**
  * 用户注册入参。
@@ -23,7 +29,10 @@ export class RegisterDto {
   @MaxLength(128)
   email?: string;
 
-  @ApiPropertyOptional({ example: 'my-app-id', description: '应用 ID（client_id），通过应用关联到对应企业' })
+  @ApiPropertyOptional({
+    example: 'my-app-id',
+    description: '应用 ID（client_id），通过应用关联到对应企业',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(64)

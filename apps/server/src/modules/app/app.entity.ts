@@ -50,7 +50,7 @@ export class App {
   redirectUri: string;
 
   /** 单点登出（SLO）时 IdP 广播通知的回调地址 */
-  @Column({ name: 'logout_callback_url', nullable: true })
+  @Column({ name: 'logout_callback_url', type: 'text', nullable: true })
   logoutCallbackUrl: string | null;
 
   /** OAuth 2.0 允许的 grant_types（JSON 数组） */
@@ -70,7 +70,11 @@ export class App {
   applicationType: string;
 
   /** Token 端点认证方式：client_secret_post / client_secret_basic */
-  @Column({ name: 'token_endpoint_auth_method', length: 32, default: 'client_secret_post' })
+  @Column({
+    name: 'token_endpoint_auth_method',
+    length: 32,
+    default: 'client_secret_post',
+  })
   tokenEndpointAuthMethod: string;
 
   /** OIDC RP-Initiated Logout 允许的回调地址（JSON 数组） */
@@ -84,13 +88,13 @@ export class App {
   logoUrl: string | null;
 
   /** 品牌主色（Hex），如 #2563EB。为空则使用默认蓝色 */
-  @Column({ name: 'primary_color', length: 7, nullable: true })
+  @Column({ name: 'primary_color', type: 'varchar', length: 7, nullable: true })
   primaryColor: string | null;
 
   /** 所属企业 ID（null 表示平台级应用） */
   @Index()
-  @Column({ name: 'enterprise_id', nullable: true })
-  enterpriseId: string;
+  @Column({ name: 'enterprise_id', type: 'varchar', length: 36, nullable: true })
+  enterpriseId: string | null;
 
   @ManyToOne(() => Enterprise, { nullable: true })
   @JoinColumn({ name: 'enterprise_id' })

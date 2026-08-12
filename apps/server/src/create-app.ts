@@ -68,7 +68,10 @@ export async function createApp(): Promise<NestExpressApplication> {
         '6. SP 调用 `GET /oauth/endsession` 发起单点登出',
     )
     .setVersion('1.0')
-    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'access-token')
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+      'access-token',
+    )
     .addTag('oauth', 'OAuth 2.0 / OIDC 标准接口')
     .addTag('oidc', 'OIDC Discovery & JWKS 端点')
     .addTag('auth', '认证与会话管理')
@@ -82,7 +85,10 @@ export async function createApp(): Promise<NestExpressApplication> {
   });
 
   // 导出 OpenAPI spec 为 JSON，供 @hey-api/openapi-ts 生成类型安全 SDK
-  const openapiOutputPath = path.resolve(__dirname, '../../../packages/shared/openapi.json');
+  const openapiOutputPath = path.resolve(
+    __dirname,
+    '../../../packages/shared/openapi.json',
+  );
   fs.mkdirSync(path.dirname(openapiOutputPath), { recursive: true });
   fs.writeFileSync(openapiOutputPath, JSON.stringify(document, null, 2));
   logger.log(`OpenAPI spec 已导出: ${openapiOutputPath}`);

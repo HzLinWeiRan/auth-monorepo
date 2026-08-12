@@ -12,7 +12,12 @@ import { DemoSpController } from './demo-sp.controller';
  * UserModule（自动注册演示账号，使 /sp 演示开箱即用）。
  */
 @Module({
-  imports: [TypeOrmModule.forFeature([App]), AuthModule, AppSpModule, UserModule],
+  imports: [
+    TypeOrmModule.forFeature([App]),
+    AuthModule,
+    AppSpModule,
+    UserModule,
+  ],
   controllers: [DemoSpController],
 })
 export class DemoSpModule {}

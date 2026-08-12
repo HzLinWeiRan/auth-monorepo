@@ -23,7 +23,7 @@ export class LoginActivity {
   username: string;
 
   @Index()
-  @Column({ name: 'enterprise_id', nullable: true, length: 36 })
+  @Column({ name: 'enterprise_id', type: 'varchar', length: 36, nullable: true })
   enterpriseId: string | null;
 
   @Column({ name: 'app_id', nullable: true, length: 64 })

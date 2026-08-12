@@ -21,7 +21,14 @@ import { EnterpriseModule } from '../enterprise/enterprise.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Session, AuthorizationCode, RefreshToken, LoginActivity, Enterprise, App]),
+    TypeOrmModule.forFeature([
+      Session,
+      AuthorizationCode,
+      RefreshToken,
+      LoginActivity,
+      Enterprise,
+      App,
+    ]),
     UserModule,
     EnterpriseModule,
   ],
@@ -39,6 +46,11 @@ import { EnterpriseModule } from '../enterprise/enterprise.module';
     AuthorizationCodeService,
     RefreshTokenService,
   ],
-  exports: [AuthService, KeyService, AuthorizationCodeService, RefreshTokenService],
+  exports: [
+    AuthService,
+    KeyService,
+    AuthorizationCodeService,
+    RefreshTokenService,
+  ],
 })
 export class AuthModule {}

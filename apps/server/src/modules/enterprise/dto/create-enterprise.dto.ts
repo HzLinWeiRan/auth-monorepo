@@ -15,6 +15,8 @@ export class CreateEnterpriseDto {
   @IsString()
   @IsNotEmpty({ message: '企业标识不能为空' })
   @MaxLength(64)
-  @Matches(/^[a-z0-9-]+$/, { message: '企业标识只能包含小写字母、数字和短横线' })
+  @Matches(/^[a-z0-9-]+$/, {
+    message: '企业标识只能包含小写字母、数字和短横线',
+  })
   slug: string;
 }

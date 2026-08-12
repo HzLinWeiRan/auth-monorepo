@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsEmail, IsOptional, MinLength, MaxLength, IsIn } from 'class-validator';
+import {
+  IsString,
+  IsEmail,
+  IsOptional,
+  MinLength,
+  MaxLength,
+  IsIn,
+} from 'class-validator';
 
 export class AdminCreateUserDto {
   @ApiProperty({ example: 'zhangsan', description: '用户名' })
@@ -20,7 +27,11 @@ export class AdminCreateUserDto {
   @MaxLength(128)
   email?: string;
 
-  @ApiPropertyOptional({ example: 'enterprise_admin', description: '角色：enterprise_admin / user', default: 'user' })
+  @ApiPropertyOptional({
+    example: 'enterprise_admin',
+    description: '角色：enterprise_admin / user',
+    default: 'user',
+  })
   @IsOptional()
   @IsString()
   @IsIn(['enterprise_admin', 'user'])

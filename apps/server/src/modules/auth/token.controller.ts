@@ -45,13 +45,18 @@ export class TokenController {
   @Public()
   @Post('token')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'OAuth 2.0 Token 端点（authorization_code / refresh_token）' })
+  @ApiOperation({
+    summary: 'OAuth 2.0 Token 端点（authorization_code / refresh_token）',
+  })
   @ApiResponse({
     status: 200,
     description: '换发成功，返回 access_token、refresh_token、id_token、scope',
     type: TokenResponseDto,
   })
-  @ApiResponse({ status: 401, description: '客户端认证失败 / 授权码无效 / 刷新令牌无效' })
+  @ApiResponse({
+    status: 401,
+    description: '客户端认证失败 / 授权码无效 / 刷新令牌无效',
+  })
   async token(@Body() dto: TokenRequestDto) {
     if (dto.grant_type === 'authorization_code') {
       return this.auth.exchangeAuthorizationCode(dto);
@@ -79,7 +84,10 @@ export class TokenController {
   @Post('revoke')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Token Revocation（RFC 7009）' })
-  @ApiResponse({ status: 200, description: '吊销成功（无论 Token 是否存在均返回 200）' })
+  @ApiResponse({
+    status: 200,
+    description: '吊销成功（无论 Token 是否存在均返回 200）',
+  })
   async revoke(@Body() dto: RevocationRequestDto) {
     await this.auth.revoke(dto.token, dto.client_id);
     return { ok: true };

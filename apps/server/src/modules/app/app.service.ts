@@ -20,7 +20,8 @@ export class AppService {
   /** 注册应用：自动生成 appId、secret 与 RSA-2048 密钥对（私钥仅注册时返回一次） */
   async create(dto: CreateAppDto, enterpriseId?: string): Promise<App> {
     const appId = `app_${randomBytes(8).toString('hex')}`;
-    const { publicKey, privateKey, kid } = this.keyService.generateKeyPair(appId);
+    const { publicKey, privateKey, kid } =
+      this.keyService.generateKeyPair(appId);
 
     const app = this.appRepo.create({
       appId,
@@ -31,11 +32,14 @@ export class AppService {
       name: dto.name,
       redirectUri: dto.redirectUri,
       logoutCallbackUrl: dto.logoutCallbackUrl,
-      grantTypes: dto.grantTypes || JSON.stringify(['authorization_code', 'refresh_token']),
+      grantTypes:
+        dto.grantTypes ||
+        JSON.stringify(['authorization_code', 'refresh_token']),
       scopes: dto.scopes || JSON.stringify(['openid', 'profile', 'email']),
       redirectUris: dto.redirectUris,
       applicationType: dto.applicationType || 'web',
-      tokenEndpointAuthMethod: dto.tokenEndpointAuthMethod || 'client_secret_post',
+      tokenEndpointAuthMethod:
+        dto.tokenEndpointAuthMethod || 'client_secret_post',
       postLogoutRedirectUris: dto.postLogoutRedirectUris,
       logoUrl: dto.logoUrl,
       primaryColor: dto.primaryColor,
@@ -45,7 +49,9 @@ export class AppService {
   }
 
   /** 应用列表（不返回 secret 和 privateKey），可选按企业过滤 */
-  async findAll(enterpriseId?: string): Promise<Omit<App, 'secret' | 'privateKey'>[]> {
+  async findAll(
+    enterpriseId?: string,
+  ): Promise<Omit<App, 'secret' | 'privateKey'>[]> {
     const apps = await this.appRepo.find({
       where: enterpriseId ? { enterpriseId } : {},
       order: { createdAt: 'DESC' },
@@ -54,7 +60,9 @@ export class AppService {
   }
 
   /** 按 appId 查询单个应用（不返回 secret 和 privateKey） */
-  async findByAppId(appId: string): Promise<Omit<App, 'secret' | 'privateKey'>> {
+  async findByAppId(
+    appId: string,
+  ): Promise<Omit<App, 'secret' | 'privateKey'>> {
     const app = await this.appRepo.findOne({ where: { appId } });
     if (!app) {
       throw new NotFoundException('应用不存在');
@@ -72,7 +80,10 @@ export class AppService {
   }
 
   /** 获取企业下应用列表（支持搜索） */
-  async findByEnterpriseId(enterpriseId: string, search?: string): Promise<App[]> {
+  async findByEnterpriseId(
+    enterpriseId: string,
+    search?: string,
+  ): Promise<App[]> {
     return this.appRepo.find({
       where: search
         ? [
@@ -85,7 +96,16 @@ export class AppService {
   }
 
   /** 更新应用（可编辑名称、回调地址、品牌配置等业务字段） */
-  async update(appId: string, dto: { name?: string; redirectUri?: string; logoutCallbackUrl?: string; logoUrl?: string; primaryColor?: string }): Promise<App> {
+  async update(
+    appId: string,
+    dto: {
+      name?: string;
+      redirectUri?: string;
+      logoutCallbackUrl?: string;
+      logoUrl?: string;
+      primaryColor?: string;
+    },
+  ): Promise<App> {
     const app = await this.appRepo.findOne({ where: { appId } });
     if (!app) {
       throw new NotFoundException('应用不存在');
@@ -110,18 +130,25 @@ export class AppService {
     grantTypes?: string;
     scopes?: string;
   }): Promise<void> {
-    const existing = await this.appRepo.findOne({ where: { appId: params.appId } });
+    const existing = await this.appRepo.findOne({
+      where: { appId: params.appId },
+    });
     if (existing) {
       existing.redirectUri = params.redirectUri;
       existing.logoutCallbackUrl = params.logoutCallbackUrl;
-      if (params.redirectUris !== undefined) existing.redirectUris = params.redirectUris;
-      if (params.postLogoutRedirectUris !== undefined) existing.postLogoutRedirectUris = params.postLogoutRedirectUris;
-      if (params.grantTypes !== undefined) existing.grantTypes = params.grantTypes;
+      if (params.redirectUris !== undefined)
+        existing.redirectUris = params.redirectUris;
+      if (params.postLogoutRedirectUris !== undefined)
+        existing.postLogoutRedirectUris = params.postLogoutRedirectUris;
+      if (params.grantTypes !== undefined)
+        existing.grantTypes = params.grantTypes;
       if (params.scopes !== undefined) existing.scopes = params.scopes;
       await this.appRepo.save(existing);
       return;
     }
-    const { publicKey, privateKey, kid } = this.keyService.generateKeyPair(params.appId);
+    const { publicKey, privateKey, kid } = this.keyService.generateKeyPair(
+      params.appId,
+    );
     const app = this.appRepo.create({
       appId: params.appId,
       secret: randomBytes(24).toString('hex'),
@@ -133,7 +160,9 @@ export class AppService {
       logoutCallbackUrl: params.logoutCallbackUrl,
       redirectUris: params.redirectUris || null,
       postLogoutRedirectUris: params.postLogoutRedirectUris || null,
-      grantTypes: params.grantTypes || JSON.stringify(['authorization_code', 'refresh_token']),
+      grantTypes:
+        params.grantTypes ||
+        JSON.stringify(['authorization_code', 'refresh_token']),
       scopes: params.scopes || JSON.stringify(['openid', 'profile', 'email']),
     });
     await this.appRepo.save(app);

@@ -80,7 +80,10 @@ export class DemoSpController implements OnModuleInit {
   @Get()
   @ApiOperation({ summary: 'SP 受保护资源首页（无会话则跳转 IdP 登录）' })
   @ApiResponse({ status: 200, description: '已登录，返回受保护资源 HTML' })
-  @ApiResponse({ status: 302, description: '无会话或会话失效，302 跳转至 /oauth/authorize' })
+  @ApiResponse({
+    status: 302,
+    description: '无会话或会话失效，302 跳转至 /oauth/authorize',
+  })
   async home(@Req() req: Request, @Res() res: Response) {
     const token = parseCookies(req)[SP_TOKEN_COOKIE];
 
@@ -100,9 +103,21 @@ export class DemoSpController implements OnModuleInit {
 
   @Public()
   @Get('callback')
-  @ApiOperation({ summary: 'SP 回调：用 Authorization Code 换取 Token 并建立本地会话' })
-  @ApiQuery({ name: 'code', required: false, description: 'OAuth 2.0 Authorization Code', example: 'a1b2c3d4...' })
-  @ApiQuery({ name: 'state', required: false, description: '防 CSRF 状态值', example: 'xyz123' })
+  @ApiOperation({
+    summary: 'SP 回调：用 Authorization Code 换取 Token 并建立本地会话',
+  })
+  @ApiQuery({
+    name: 'code',
+    required: false,
+    description: 'OAuth 2.0 Authorization Code',
+    example: 'a1b2c3d4...',
+  })
+  @ApiQuery({
+    name: 'state',
+    required: false,
+    description: '防 CSRF 状态值',
+    example: 'xyz123',
+  })
   @ApiResponse({ status: 302, description: '换票后 302 跳转至 SP 首页' })
   async callback(
     @Query('code') code: string,
@@ -116,23 +131,20 @@ export class DemoSpController implements OnModuleInit {
     if (code) {
       try {
         const port = this.config.get<number>('port') || 3000;
-        const response = await fetch(
-          `http://localhost:${port}/oauth/token`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              grant_type: 'authorization_code',
-              code,
-              redirect_uri: `${req.protocol}://${req.get('host')}/sp/callback`,
-              client_id: DEMO_APP_ID,
-              client_secret: secret,
-              code_verifier: codeVerifier || undefined,
-            }),
-          },
-        );
+        const response = await fetch(`http://localhost:${port}/oauth/token`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            grant_type: 'authorization_code',
+            code,
+            redirect_uri: `${req.protocol}://${req.get('host')}/sp/callback`,
+            client_id: DEMO_APP_ID,
+            client_secret: secret,
+            code_verifier: codeVerifier || undefined,
+          }),
+        });
 
-        const data = await response.json() as Record<string, unknown>;
+        const data = (await response.json()) as Record<string, unknown>;
         if (data.access_token) {
           res.cookie(SP_TOKEN_COOKIE, data.access_token, {
             httpOnly: true,
@@ -233,7 +245,8 @@ export class DemoSpController implements OnModuleInit {
 
   /** 渲染 SP 受保护资源主页 */
   private renderHome(user: PublicUser, token: string): string {
-    const shortToken = token.length > 36 ? `${token.slice(0, 18)}…${token.slice(-10)}` : token;
+    const shortToken =
+      token.length > 36 ? `${token.slice(0, 18)}…${token.slice(-10)}` : token;
     return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>

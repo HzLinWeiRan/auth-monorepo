@@ -1,4 +1,8 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like } from 'typeorm';
 import { Enterprise } from './enterprise.entity';
@@ -23,7 +27,11 @@ export class EnterpriseService {
     return this.enterpriseRepo.save(enterprise);
   }
 
-  async findAll(page = 1, pageSize = 20, search?: string): Promise<{ items: Enterprise[]; total: number }> {
+  async findAll(
+    page = 1,
+    pageSize = 20,
+    search?: string,
+  ): Promise<{ items: Enterprise[]; total: number }> {
     const [items, total] = await this.enterpriseRepo.findAndCount({
       where: search
         ? [

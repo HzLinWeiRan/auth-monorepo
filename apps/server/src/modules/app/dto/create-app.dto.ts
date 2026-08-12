@@ -1,5 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString, IsUrl, IsArray, IsIn, MaxLength } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUrl,
+  IsArray,
+  IsIn,
+  MaxLength,
+} from 'class-validator';
 
 /** SP 应用注册入参（OAuth 2.0 Client） */
 export class CreateAppDto {
@@ -21,12 +29,16 @@ export class CreateAppDto {
     example: 'http://localhost:3012/sp/app-a/slo',
   })
   @IsOptional()
-  @IsUrl({ require_tld: false }, { message: 'logoutCallbackUrl 必须是合法 URL' })
+  @IsUrl(
+    { require_tld: false },
+    { message: 'logoutCallbackUrl 必须是合法 URL' },
+  )
   logoutCallbackUrl?: string;
 
   @ApiPropertyOptional({
     description: 'OAuth 2.0 多回调地址列表（JSON 数组，优先于 redirectUri）',
-    example: '["http://localhost:3012/callback","http://localhost:3012/callback2"]',
+    example:
+      '["http://localhost:3012/callback","http://localhost:3012/callback2"]',
   })
   @IsOptional()
   @IsString()

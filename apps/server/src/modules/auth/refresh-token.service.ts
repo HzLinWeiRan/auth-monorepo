@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { randomUUID, createHash } from 'crypto';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import type { StringValue } from 'ms';
 import { RefreshToken } from './refresh-token.entity';
 
 export interface CreateRefreshTokenParams {
@@ -41,7 +42,8 @@ export class RefreshTokenService {
     family: string;
   }> {
     const family = randomUUID();
-    const refreshExpiresIn = this.config.get<string>('jwt.refreshExpiresIn') || '7d';
+    const refreshExpiresIn = (this.config.get<string>('jwt.refreshExpiresIn') ||
+      '7d') as StringValue;
 
     const refreshToken = this.jwt.sign(
       {
@@ -79,10 +81,7 @@ export class RefreshTokenService {
    * 如果检测到 reuse（同一 family 中已存在 used token 被再次使用），
    * 则失效整个 family（防止 token 泄露）。
    */
-  async rotate(
-    token: string,
-    clientId: string,
-  ): Promise<RotateResult> {
+  async rotate(token: string, clientId: string): Promise<RotateResult> {
     const tokenHash = this.hashToken(token);
 
     // 解码 token 获取 family（不验签，先查 DB）
@@ -113,7 +112,9 @@ export class RefreshTokenService {
     // Reuse detection：如果 token 已被使用过，说明可能被盗，失效整个 family
     if (entity.used) {
       await this.repo.delete({ family: entity.family });
-      throw new UnauthorizedException('Refresh Token 已被使用（可能泄露），已失效整个 family');
+      throw new UnauthorizedException(
+        'Refresh Token 已被使用（可能泄露），已失效整个 family',
+      );
     }
 
     // 标记旧 token 为 used
@@ -122,7 +123,8 @@ export class RefreshTokenService {
 
     // 签发新 token（同一 family，加 jti 防 hash 碰撞）
     const scopes = JSON.parse(entity.scopes);
-    const refreshExpiresIn = this.config.get<string>('jwt.refreshExpiresIn') || '7d';
+    const refreshExpiresIn = (this.config.get<string>('jwt.refreshExpiresIn') ||
+      '7d') as StringValue;
     const newRefreshToken = this.jwt.sign(
       {
         sub: entity.userId,
@@ -178,11 +180,16 @@ export class RefreshTokenService {
     if (!matched) return 604800000; // 默认 7 天
     const n = parseInt(matched[1], 10);
     switch (matched[2]) {
-      case 's': return n * 1000;
-      case 'm': return n * 60000;
-      case 'h': return n * 3600000;
-      case 'd': return n * 86400000;
-      default: return n * 1000;
+      case 's':
+        return n * 1000;
+      case 'm':
+        return n * 60000;
+      case 'h':
+        return n * 3600000;
+      case 'd':
+        return n * 86400000;
+      default:
+        return n * 1000;
     }
   }
 }

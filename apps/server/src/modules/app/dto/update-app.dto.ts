@@ -22,7 +22,10 @@ export class UpdateAppDto {
     example: 'http://localhost:3012/sp/app-a/slo',
   })
   @IsOptional()
-  @IsUrl({ require_tld: false }, { message: 'logoutCallbackUrl 必须是合法 URL' })
+  @IsUrl(
+    { require_tld: false },
+    { message: 'logoutCallbackUrl 必须是合法 URL' },
+  )
   logoutCallbackUrl?: string;
 
   @ApiPropertyOptional({

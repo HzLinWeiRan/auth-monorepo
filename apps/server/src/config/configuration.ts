@@ -6,13 +6,13 @@ export default () => ({
   port: Number(process.env.PORT) || 3000,
   apiPrefix: process.env.API_PREFIX || 'api/v1',
   /** OAuth 2.0 / OIDC Issuer 标识（用于 id_token 的 iss claim） */
-  issuer: process.env.ISSUER || `http://localhost:${Number(process.env.PORT) || 3000}`,
+  issuer:
+    process.env.ISSUER ||
+    `http://localhost:${Number(process.env.PORT) || 3000}`,
   database: {
     // 默认使用 better-sqlite3（纯预编译二进制，免本地编译）；可切换 postgres/mysql
     type: (process.env.DB_TYPE || 'better-sqlite3') as
-      | 'better-sqlite3'
-      | 'postgres'
-      | 'mysql',
+      'better-sqlite3' | 'postgres' | 'mysql',
     database: process.env.DB_DATABASE || './sso.sqlite',
   },
   jwt: {
@@ -36,7 +36,8 @@ export default () => ({
   },
   oauth: {
     /** OAuth 2.0 Authorization Code 有效期（毫秒） */
-    authorizationCodeTtlMs: Number(process.env.AUTHORIZATION_CODE_TTL_MS) || 60000,
+    authorizationCodeTtlMs:
+      Number(process.env.AUTHORIZATION_CODE_TTL_MS) || 60000,
   },
   /** 每个企业最多可创建的应用数量 */
   appLimitPerEnterprise: Number(process.env.APP_LIMIT_PER_ENTERPRISE) || 10,

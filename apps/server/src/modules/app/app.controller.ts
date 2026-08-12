@@ -30,8 +30,15 @@ export class AppController {
   constructor(private readonly apps: AppService) {}
 
   @Post()
-  @ApiOperation({ summary: '注册 SP 应用，生成 appId、secret 与 RSA-2048 密钥对（私钥仅此一次返回）' })
-  @ApiResponse({ status: 201, description: '注册成功，返回含 secret、publicKey、privateKey、kid 的完整应用信息' })
+  @ApiOperation({
+    summary:
+      '注册 SP 应用，生成 appId、secret 与 RSA-2048 密钥对（私钥仅此一次返回）',
+  })
+  @ApiResponse({
+    status: 201,
+    description:
+      '注册成功，返回含 secret、publicKey、privateKey、kid 的完整应用信息',
+  })
   @ApiResponse({ status: 401, description: '未登录' })
   async create(@Body() dto: CreateAppDto) {
     const app = await this.apps.create(dto);
@@ -39,15 +46,23 @@ export class AppController {
   }
 
   @Get()
-  @ApiOperation({ summary: '查询已注册的应用列表（不含 secret 和 privateKey，含 publicKey）' })
+  @ApiOperation({
+    summary: '查询已注册的应用列表（不含 secret 和 privateKey，含 publicKey）',
+  })
   @ApiResponse({ status: 200, description: '应用列表' })
   async list() {
     return success(await this.apps.findAll());
   }
 
   @Get(':appId')
-  @ApiOperation({ summary: '按 appId 查询应用详情（不含 secret 和 privateKey，含 publicKey）' })
-  @ApiParam({ name: 'appId', description: '应用标识', example: 'app_1a2b3c4d5e6f7a8b' })
+  @ApiOperation({
+    summary: '按 appId 查询应用详情（不含 secret 和 privateKey，含 publicKey）',
+  })
+  @ApiParam({
+    name: 'appId',
+    description: '应用标识',
+    example: 'app_1a2b3c4d5e6f7a8b',
+  })
   @ApiResponse({ status: 200, description: '应用详情' })
   @ApiResponse({ status: 404, description: '应用不存在' })
   async detail(@Param('appId') appId: string) {

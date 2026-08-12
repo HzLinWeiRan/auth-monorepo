@@ -24,7 +24,8 @@ export class TokenRequestDto {
   code?: string;
 
   @ApiPropertyOptional({
-    description: '回调地址（grant_type=authorization_code 时必填，须与授权请求一致）',
+    description:
+      '回调地址（grant_type=authorization_code 时必填，须与授权请求一致）',
     example: 'http://localhost:3000/sp/callback',
   })
   @IsOptional()

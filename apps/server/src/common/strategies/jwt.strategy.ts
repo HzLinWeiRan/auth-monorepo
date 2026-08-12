@@ -66,7 +66,13 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 
   async validate(
     payload: JwtPayload,
-  ): Promise<{ id: string; username: string; sessionId?: string; enterpriseId?: string; roles?: string }> {
+  ): Promise<{
+    id: string;
+    username: string;
+    sessionId?: string;
+    enterpriseId?: string;
+    roles?: string;
+  }> {
     if (!payload?.sub) {
       throw new UnauthorizedException('无效令牌');
     }

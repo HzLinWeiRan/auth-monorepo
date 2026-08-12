@@ -32,7 +32,7 @@ export class User {
   @Column({ name: 'password_hash' })
   passwordHash: string;
 
-  @Column({ nullable: true, length: 128 })
+  @Column({ type: 'varchar', nullable: true, length: 128 })
   email: string | null;
 
   /** 软删除标记：true 表示已删除，查询时排除 */
@@ -45,7 +45,7 @@ export class User {
 
   /** 所属企业 ID（null 表示平台级账号，如超级管理员） */
   @Index()
-  @Column({ name: 'enterprise_id', nullable: true })
+  @Column({ name: 'enterprise_id', type: 'varchar', length: 36, nullable: true })
   enterpriseId: string | null;
 
   @ManyToOne(() => Enterprise, { nullable: true })

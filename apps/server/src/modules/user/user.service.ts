@@ -24,7 +24,11 @@ export class UserService {
   ) {}
 
   /** 注册新用户（需指定所属企业） */
-  async register(dto: RegisterDto, enterpriseId?: string, roles?: string): Promise<User> {
+  async register(
+    dto: RegisterDto,
+    enterpriseId?: string,
+    roles?: string,
+  ): Promise<User> {
     const exists = await this.userRepo.findOne({
       where: enterpriseId
         ? { username: dto.username, enterpriseId }

@@ -37,33 +37,48 @@ import { Enterprise } from './modules/enterprise/enterprise.entity';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         type: (config.get('database.type') || 'better-sqlite3') as
-          | 'better-sqlite3'
-          | 'postgres'
-          | 'mysql',
+          'better-sqlite3' | 'postgres' | 'mysql',
         database: config.get<string>('database.database') || './sso.sqlite',
         autoLoadEntities: true,
         synchronize: true,
-        entities: [User, App, Session, AuthorizationCode, RefreshToken, LoginActivity, Enterprise],
+        entities: [
+          User,
+          App,
+          Session,
+          AuthorizationCode,
+          RefreshToken,
+          LoginActivity,
+          Enterprise,
+        ],
       }),
     }),
     // JWT 基础设施（全局）
     JwtModule.registerAsync({
       global: true,
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        secret: config.get<string>('jwt.secret'),
-        signOptions: {
-          expiresIn: config.get<string>('jwt.accessExpiresIn') || '15m',
-        },
-      }),
+      useFactory: (config: ConfigService) => {
+        const secret = config.get<string>('jwt.secret');
+        if (!secret) {
+          throw new Error('jwt.secret 未配置');
+        }
+        return {
+          secret,
+          signOptions: {
+            expiresIn: (config.get<string>('jwt.accessExpiresIn') ||
+              '15m') as never,
+          },
+        };
+      },
     }),
     // 全局限流（防爆破 / 防刷）
-    ThrottlerModule.forRoot([
-      {
-        ttl: 60, // 60 秒窗口
-        limit: 100, // 单 IP 最多 100 次请求
-      },
-    ]),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60, // 60 秒窗口
+          limit: 100, // 单 IP 最多 100 次请求
+        },
+      ],
+    }),
     // 功能模块
     UserModule,
     AuthModule,

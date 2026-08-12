@@ -45,23 +45,75 @@ export class OAuthController {
     @InjectRepository(App)
     private readonly appRepo: Repository<App>,
   ) {
-    const file = path.join(__dirname, '..', '..', 'modules', 'demo-sp', 'views', 'login.html');
-    this.loginHtml = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '<form method="post" action="/oauth/login"></form>';
+    const file = path.join(
+      __dirname,
+      '..',
+      '..',
+      'modules',
+      'demo-sp',
+      'views',
+      'login.html',
+    );
+    this.loginHtml = fs.existsSync(file)
+      ? fs.readFileSync(file, 'utf8')
+      : '<form method="post" action="/oauth/login"></form>';
   }
 
   @Public()
   @Get('authorize')
   @UseFilters(OAuthExceptionFilter)
   @ApiOperation({ summary: 'OAuth 2.0 授权端点（Authorization Code Flow）' })
-  @ApiQuery({ name: 'response_type', required: true, description: '授权类型，固定为 "code"', example: 'code' })
-  @ApiQuery({ name: 'client_id', required: true, description: 'OAuth 客户端标识', example: 'demo-sp' })
-  @ApiQuery({ name: 'redirect_uri', required: true, description: '授权成功后的回调地址', example: 'http://localhost:3000/sp/callback' })
-  @ApiQuery({ name: 'scope', required: false, description: '请求的作用域（空格分隔），如 "openid profile email"', example: 'openid profile email' })
-  @ApiQuery({ name: 'state', required: false, description: '透传给 SP 的 opaque 状态值，用于防 CSRF', example: 'xyz123' })
-  @ApiQuery({ name: 'code_challenge', required: false, description: 'PKCE code_challenge' })
-  @ApiQuery({ name: 'code_challenge_method', required: false, description: 'PKCE 变换方法：S256 或 plain', example: 'S256' })
-  @ApiQuery({ name: 'nonce', required: false, description: 'OIDC nonce', example: 'n-0S6_WzA2Mj' })
-  @ApiResponse({ status: 302, description: '302 跳转：已登录回调 SP（携带 code），未登录跳登录页' })
+  @ApiQuery({
+    name: 'response_type',
+    required: true,
+    description: '授权类型，固定为 "code"',
+    example: 'code',
+  })
+  @ApiQuery({
+    name: 'client_id',
+    required: true,
+    description: 'OAuth 客户端标识',
+    example: 'demo-sp',
+  })
+  @ApiQuery({
+    name: 'redirect_uri',
+    required: true,
+    description: '授权成功后的回调地址',
+    example: 'http://localhost:3000/sp/callback',
+  })
+  @ApiQuery({
+    name: 'scope',
+    required: false,
+    description: '请求的作用域（空格分隔），如 "openid profile email"',
+    example: 'openid profile email',
+  })
+  @ApiQuery({
+    name: 'state',
+    required: false,
+    description: '透传给 SP 的 opaque 状态值，用于防 CSRF',
+    example: 'xyz123',
+  })
+  @ApiQuery({
+    name: 'code_challenge',
+    required: false,
+    description: 'PKCE code_challenge',
+  })
+  @ApiQuery({
+    name: 'code_challenge_method',
+    required: false,
+    description: 'PKCE 变换方法：S256 或 plain',
+    example: 'S256',
+  })
+  @ApiQuery({
+    name: 'nonce',
+    required: false,
+    description: 'OIDC nonce',
+    example: 'n-0S6_WzA2Mj',
+  })
+  @ApiResponse({
+    status: 302,
+    description: '302 跳转：已登录回调 SP（携带 code），未登录跳登录页',
+  })
   @ApiResponse({ status: 404, description: '未知应用' })
   @ApiResponse({ status: 401, description: '回调地址不匹配' })
   async authorize(
@@ -69,7 +121,15 @@ export class OAuthController {
     @Res() res: Response,
     @Req() req: Request,
   ) {
-    const { client_id, redirect_uri, scope, state, code_challenge, code_challenge_method, nonce } = q;
+    const {
+      client_id,
+      redirect_uri,
+      scope,
+      state,
+      code_challenge,
+      code_challenge_method,
+      nonce,
+    } = q;
 
     // 校验应用存在性
     if (client_id) {
@@ -94,7 +154,8 @@ export class OAuthController {
       if (scope) loginQuery.set('scope', scope);
       if (state) loginQuery.set('state', state);
       if (code_challenge) loginQuery.set('code_challenge', code_challenge);
-      if (code_challenge_method) loginQuery.set('code_challenge_method', code_challenge_method);
+      if (code_challenge_method)
+        loginQuery.set('code_challenge_method', code_challenge_method);
       if (nonce) loginQuery.set('nonce', nonce);
       return res.redirect(`/oauth/login?${loginQuery.toString()}`);
     }
@@ -129,14 +190,47 @@ export class OAuthController {
   @Public()
   @Get('login')
   @ApiOperation({ summary: '渲染 OAuth 登录页' })
-  @ApiQuery({ name: 'client_id', required: false, description: 'OAuth 客户端标识', example: 'demo-sp' })
-  @ApiQuery({ name: 'redirect_uri', required: false, description: '回调地址', example: 'http://localhost:3000/sp/callback' })
-  @ApiQuery({ name: 'scope', required: false, description: '请求的作用域', example: 'openid profile email' })
-  @ApiQuery({ name: 'state', required: false, description: '透传状态值', example: 'xyz123' })
-  @ApiQuery({ name: 'code_challenge', required: false, description: 'PKCE code_challenge' })
-  @ApiQuery({ name: 'code_challenge_method', required: false, description: 'PKCE 方法' })
+  @ApiQuery({
+    name: 'client_id',
+    required: false,
+    description: 'OAuth 客户端标识',
+    example: 'demo-sp',
+  })
+  @ApiQuery({
+    name: 'redirect_uri',
+    required: false,
+    description: '回调地址',
+    example: 'http://localhost:3000/sp/callback',
+  })
+  @ApiQuery({
+    name: 'scope',
+    required: false,
+    description: '请求的作用域',
+    example: 'openid profile email',
+  })
+  @ApiQuery({
+    name: 'state',
+    required: false,
+    description: '透传状态值',
+    example: 'xyz123',
+  })
+  @ApiQuery({
+    name: 'code_challenge',
+    required: false,
+    description: 'PKCE code_challenge',
+  })
+  @ApiQuery({
+    name: 'code_challenge_method',
+    required: false,
+    description: 'PKCE 方法',
+  })
   @ApiQuery({ name: 'nonce', required: false, description: 'OIDC nonce' })
-  @ApiQuery({ name: 'error', required: false, description: '上次登录失败时的错误提示信息', example: '用户名或密码错误' })
+  @ApiQuery({
+    name: 'error',
+    required: false,
+    description: '上次登录失败时的错误提示信息',
+    example: '用户名或密码错误',
+  })
   @ApiResponse({ status: 200, description: '返回登录页 HTML' })
   async loginPage(
     @Query('response_type') responseType: string,
@@ -199,11 +293,20 @@ export class OAuthController {
   @Public()
   @Post('login')
   @ApiOperation({ summary: '提交 OAuth 登录表单' })
-  @ApiResponse({ status: 302, description: '登录成功：写全局会话 Cookie 后回跳 /oauth/authorize' })
-  @ApiResponse({ status: 401, description: '登录失败：带 error 参数重定向回登录页' })
+  @ApiResponse({
+    status: 302,
+    description: '登录成功：写全局会话 Cookie 后回跳 /oauth/authorize',
+  })
+  @ApiResponse({
+    status: 401,
+    description: '登录失败：带 error 参数重定向回登录页',
+  })
   async loginSubmit(@Body() dto: SsoLoginDto, @Res() res: Response) {
     try {
-      const result = await this.auth.login({ username: dto.username, password: dto.password });
+      const result = await this.auth.login({
+        username: dto.username,
+        password: dto.password,
+      });
       const cookieCfg = {
         httpOnly: true,
         sameSite: 'lax' as const,
@@ -220,8 +323,10 @@ export class OAuthController {
         if (dto.redirectUri) authQuery.set('redirect_uri', dto.redirectUri);
         if (dto.scope) authQuery.set('scope', dto.scope);
         if (dto.state) authQuery.set('state', dto.state);
-        if (dto.code_challenge) authQuery.set('code_challenge', dto.code_challenge);
-        if (dto.code_challenge_method) authQuery.set('code_challenge_method', dto.code_challenge_method);
+        if (dto.code_challenge)
+          authQuery.set('code_challenge', dto.code_challenge);
+        if (dto.code_challenge_method)
+          authQuery.set('code_challenge_method', dto.code_challenge_method);
         if (dto.nonce) authQuery.set('nonce', dto.nonce);
         return res.redirect(`/oauth/authorize?${authQuery.toString()}`);
       }
@@ -242,10 +347,22 @@ export class OAuthController {
   @Public()
   @Get('endsession')
   @ApiOperation({ summary: 'OIDC RP-Initiated Logout' })
-  @ApiQuery({ name: 'id_token_hint', required: true, description: 'ID Token（用于标识待登出的会话）', example: 'eyJhbGciOi...' })
-  @ApiQuery({ name: 'post_logout_redirect_uri', required: false, description: '登出后的回调地址' })
+  @ApiQuery({
+    name: 'id_token_hint',
+    required: true,
+    description: 'ID Token（用于标识待登出的会话）',
+    example: 'eyJhbGciOi...',
+  })
+  @ApiQuery({
+    name: 'post_logout_redirect_uri',
+    required: false,
+    description: '登出后的回调地址',
+  })
   @ApiQuery({ name: 'state', required: false, description: '透传状态值' })
-  @ApiResponse({ status: 302, description: '登出成功：302 跳转至 post_logout_redirect_uri' })
+  @ApiResponse({
+    status: 302,
+    description: '登出成功：302 跳转至 post_logout_redirect_uri',
+  })
   @ApiResponse({ status: 401, description: 'id_token_hint 无效' })
   async endSession(
     @Query('id_token_hint') idTokenHint: string,
@@ -281,9 +398,18 @@ export class OAuthController {
    */
   private darkenColor(hex: string, amount: number): string {
     const clean = hex.replace('#', '');
-    const r = Math.max(0, Math.floor(parseInt(clean.substring(0, 2), 16) * (1 - amount)));
-    const g = Math.max(0, Math.floor(parseInt(clean.substring(2, 4), 16) * (1 - amount)));
-    const b = Math.max(0, Math.floor(parseInt(clean.substring(4, 6), 16) * (1 - amount)));
+    const r = Math.max(
+      0,
+      Math.floor(parseInt(clean.substring(0, 2), 16) * (1 - amount)),
+    );
+    const g = Math.max(
+      0,
+      Math.floor(parseInt(clean.substring(2, 4), 16) * (1 - amount)),
+    );
+    const b = Math.max(
+      0,
+      Math.floor(parseInt(clean.substring(4, 6), 16) * (1 - amount)),
+    );
     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
   }
 }

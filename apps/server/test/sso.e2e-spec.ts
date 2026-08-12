@@ -117,7 +117,9 @@ describe('SSO 核心链路 (e2e)', () => {
       .set('Authorization', `Bearer ${accessToken}`)
       .expect(200);
     expect(Array.isArray(res.body.data)).toBe(true);
-    expect(res.body.data.find((a: any) => a.appId === appId).secret).toBeUndefined();
+    expect(
+      res.body.data.find((a: any) => a.appId === appId).secret,
+    ).toBeUndefined();
   });
 
   it('应用详情不含 secret', async () => {

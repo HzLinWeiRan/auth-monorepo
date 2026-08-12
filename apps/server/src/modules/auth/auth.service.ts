@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as rawJwt from 'jsonwebtoken';
+import type { StringValue } from 'ms';
 import { createHash } from 'crypto';
 import { UserService } from '../user/user.service';
 import { User } from '../user/user.entity';
@@ -72,12 +73,12 @@ export class AuthService {
     return this.config.get<number>('session.ttlMs') || 86400000;
   }
 
-  private get accessExpiresIn(): string {
-    return this.config.get<string>('jwt.accessExpiresIn') || '15m';
+  private get accessExpiresIn(): StringValue {
+    return (this.config.get<string>('jwt.accessExpiresIn') || '15m') as StringValue;
   }
 
-  private get refreshExpiresIn(): string {
-    return this.config.get<string>('jwt.refreshExpiresIn') || '7d';
+  private get refreshExpiresIn(): StringValue {
+    return (this.config.get<string>('jwt.refreshExpiresIn') || '7d') as StringValue;
   }
 
   private toPublicUser(user: User): PublicUser {
@@ -157,14 +158,21 @@ export class AuthService {
   /** 账号密码登录，返回全局会话标识与双 Token。
    * 支持企业作用域：有 clientId 时通过 App → Enterprise 确定企业，在该企业内查找用户。
    */
-  async login(dto: LoginDto): Promise<{ sessionId: string } & TokenPair & { user: PublicUser }> {
+  async login(
+    dto: LoginDto,
+  ): Promise<{ sessionId: string } & TokenPair & { user: PublicUser }> {
     let user: User | null = null;
 
     // 尝试从 clientId 推导企业上下文
     if ((dto as any).clientId) {
-      const app = await this.appRepo.findOne({ where: { appId: (dto as any).clientId } });
+      const app = await this.appRepo.findOne({
+        where: { appId: (dto as any).clientId },
+      });
       if (app?.enterpriseId) {
-        user = await this.users.findByUsernameAndEnterpriseId(dto.username, app.enterpriseId);
+        user = await this.users.findByUsernameAndEnterpriseId(
+          dto.username,
+          app.enterpriseId,
+        );
       }
     }
 
@@ -176,7 +184,7 @@ export class AuthService {
     if (!user) {
       throw new BadRequestException('用户名或密码错误');
     }
-    
+
     const ok = await this.users.validatePassword(user, dto.password);
     if (!ok) {
       throw new BadRequestException('用户名或密码错误');
@@ -198,7 +206,11 @@ export class AuthService {
 
     const session = await this.sessions.create(user.id, this.sessionTtl);
     const tokens = await this.issueTokens(user, session.sessionId);
-    return { sessionId: session.sessionId, ...tokens, user: this.toPublicUser(user) };
+    return {
+      sessionId: session.sessionId,
+      ...tokens,
+      user: this.toPublicUser(user),
+    };
   }
 
   /**
@@ -207,7 +219,9 @@ export class AuthService {
    * - RS256 → 按 header kid 查应用公钥验签（SP Token）
    * 验签通过后查全局会话与用户信息。
    */
-  async validateToken(dto: ValidateDto): Promise<{ valid: boolean; user?: PublicUser }> {
+  async validateToken(
+    dto: ValidateDto,
+  ): Promise<{ valid: boolean; user?: PublicUser }> {
     const decoded = rawJwt.decode(dto.token, { complete: true });
     if (!decoded) return { valid: false };
 
@@ -304,7 +318,9 @@ export class AuthService {
     nonce?: string;
     userId: string; // 从全局会话中获取
   }): Promise<{ code: string }> {
-    const app = await this.appRepo.findOne({ where: { appId: params.clientId } });
+    const app = await this.appRepo.findOne({
+      where: { appId: params.clientId },
+    });
     if (!app) {
       throw new NotFoundException('未知应用');
     }
@@ -317,7 +333,9 @@ export class AuthService {
 
     // 校验 scope
     const allowedScopes = this.getAllowedScopes(app);
-    const requestedScopes = (params.scope || 'openid').split(' ').filter(Boolean);
+    const requestedScopes = (params.scope || 'openid')
+      .split(' ')
+      .filter(Boolean);
     for (const s of requestedScopes) {
       if (!allowedScopes.includes(s)) {
         throw new UnauthorizedException(`不允许的 scope: ${s}`);
@@ -463,14 +481,20 @@ export class AuthService {
     if (!dto.refresh_token) {
       throw new UnauthorizedException('refresh_token 缺失');
     }
-    const rotateResult = await this.refreshTokens.rotate(dto.refresh_token, dto.client_id);
+    const rotateResult = await this.refreshTokens.rotate(
+      dto.refresh_token,
+      dto.client_id,
+    );
 
     // 从 refresh token 解码获取 sub，再从 DB 查询完整的用户信息
     let userId: string;
     let sessionId: string;
     let user: User;
     try {
-      const decoded = this.jwt.decode(dto.refresh_token) as Record<string, unknown>;
+      const decoded = this.jwt.decode(dto.refresh_token) as Record<
+        string,
+        unknown
+      >;
       if (!decoded?.sub) {
         throw new UnauthorizedException('Refresh Token 缺少 sub');
       }
@@ -606,9 +630,13 @@ export class AuthService {
       // 尝试 RS256 验签（按 kid 查公钥）
       const decoded = rawJwt.decode(token, { complete: true });
       if (decoded && decoded.header.alg === 'RS256' && decoded.header.kid) {
-        const publicKey = await this.keyService.getPublicKeyByKid(decoded.header.kid as string);
+        const publicKey = await this.keyService.getPublicKeyByKid(
+          decoded.header.kid as string,
+        );
         if (publicKey) {
-          payload = rawJwt.verify(token, publicKey, { algorithms: ['RS256'] }) as Record<string, unknown>;
+          payload = rawJwt.verify(token, publicKey, {
+            algorithms: ['RS256'],
+          }) as Record<string, unknown>;
         }
       }
       if (!payload) {
@@ -663,9 +691,13 @@ export class AuthService {
     try {
       const decoded = rawJwt.decode(idTokenHint, { complete: true });
       if (decoded && decoded.header.alg === 'RS256' && decoded.header.kid) {
-        const publicKey = await this.keyService.getPublicKeyByKid(decoded.header.kid as string);
+        const publicKey = await this.keyService.getPublicKeyByKid(
+          decoded.header.kid as string,
+        );
         if (publicKey) {
-          const verified = rawJwt.verify(idTokenHint, publicKey, { algorithms: ['RS256'] });
+          const verified = rawJwt.verify(idTokenHint, publicKey, {
+            algorithms: ['RS256'],
+          });
           // verify 返回 object（id_token 为 RS256 签名的对象型 JWT），此处有意跨类型断言，先经 unknown 转换
           payload = verified as unknown as typeof payload;
         }
@@ -725,7 +757,9 @@ export class AuthService {
       try {
         const uris = JSON.parse(app.redirectUris);
         if (Array.isArray(uris) && uris.length > 0) return uris;
-      } catch { /* fall through */ }
+      } catch {
+        /* fall through */
+      }
     }
     return [app.redirectUri];
   }
@@ -736,7 +770,9 @@ export class AuthService {
       try {
         const scopes = JSON.parse(app.scopes);
         if (Array.isArray(scopes)) return scopes;
-      } catch { /* fall through */ }
+      } catch {
+        /* fall through */
+      }
     }
     return ['openid', 'profile', 'email'];
   }

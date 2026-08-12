@@ -1,5 +1,12 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsEmail, IsOptional, MaxLength, IsIn, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsEmail,
+  IsOptional,
+  MaxLength,
+  IsIn,
+  IsBoolean,
+} from 'class-validator';
 
 export class AdminUpdateUserDto {
   @ApiPropertyOptional({ example: 'zhangsan@example.com', description: '邮箱' })

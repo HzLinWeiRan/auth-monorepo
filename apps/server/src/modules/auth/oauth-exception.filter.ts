@@ -1,4 +1,9 @@
-import { ExceptionFilter, Catch, ArgumentsHost, BadRequestException } from '@nestjs/common';
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  BadRequestException,
+} from '@nestjs/common';
 import { Response } from 'express';
 
 /**
@@ -30,8 +35,10 @@ export class OAuthExceptionFilter implements ExceptionFilter {
     loginQuery.set('error', message);
     const originalClientId = req.query?.client_id || '';
     const originalRedirectUri = req.query?.redirect_uri || '';
-    if (originalClientId) loginQuery.set('client_id', originalClientId as string);
-    if (originalRedirectUri) loginQuery.set('redirect_uri', originalRedirectUri as string);
+    if (originalClientId)
+      loginQuery.set('client_id', originalClientId as string);
+    if (originalRedirectUri)
+      loginQuery.set('redirect_uri', originalRedirectUri as string);
 
     res.status(status).setHeader('Content-Type', 'text/html; charset=utf-8');
     res.send(`<!DOCTYPE html>

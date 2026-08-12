@@ -52,7 +52,7 @@ export class AuthorizationCode {
   codeChallenge: string | null;
 
   /** PKCE 变换方法：'S256' 或 'plain' */
-  @Column({ name: 'code_challenge_method', length: 16, nullable: true })
+  @Column({ name: 'code_challenge_method', type: 'varchar', length: 16, nullable: true })
   codeChallengeMethod: string | null;
 
   /** OIDC nonce（从授权请求透传，用于 id_token 防重放） */
