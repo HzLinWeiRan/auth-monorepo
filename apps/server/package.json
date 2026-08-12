@@ -8,7 +8,7 @@
   "scripts": {
     "build": "rm -f tsconfig.build.tsbuildinfo && tsc -p tsconfig.build.json && npm run copy:assets",
     "copy:assets": "cp -r src/modules/demo-sp/views dist/modules/demo-sp/views 2>/dev/null || true",
-    "start": "nest start",
+    "start": "rm -f tsconfig.build.tsbuildinfo && nest start",
     "dev": "rm -f tsconfig.build.tsbuildinfo && nest start --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,test}/**/*.ts\" --fix",
@@ -28,6 +28,7 @@
     "@nestjs/swagger": "^7.4.0",
     "@nestjs/throttler": "^5.1.0",
     "@nestjs/typeorm": "^10.0.2",
+    "@whatwg-node/server": "^0.11.0",
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^11.3.0",
     "class-transformer": "^0.5.1",
@@ -37,6 +38,7 @@
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "serverless-http": "^3.2.0",
     "typeorm": "^0.3.20"
   },
   "devDependencies": {

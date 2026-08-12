@@ -1,6 +1,9 @@
 {
   "name": "nestjs-sso-monorepo",
   "version": "1.0.0",
+  "engines": {
+    "node": ">=v22.18.0"
+  },
   "private": true,
   "description": "基于 NestJS 的单点登录（SSO）统一认证中心 - Monorepo",
   "workspaces": [
